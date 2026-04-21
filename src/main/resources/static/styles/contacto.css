@@ -1,0 +1,272 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap");
+
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  min-height: 100vh;
+  font-family: "Poppins", sans-serif;
+ background-color: rgb(248, 240, 255);
+}
+
+/* Popup en tonos malva */
+.malva-popup {
+  background: linear-gradient(135deg, hsl(275, 60%, 36%),hsl(273, 81%, 69%));
+  border-radius: 10px;
+  color: #fff;
+  font-family: "Poppins", sans-serif;
+}
+
+/* Botón de confirmación en tono malva */
+.malva-confirm-button {
+  background-color: hsl(275, 60%, 36%) !important;
+  border: none !important;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  color: #fff !important;
+  transition: background-color 0.3s ease;
+}
+
+.malva-confirm-button:hover {
+  background-color: hsl(275, 68%, 24%) !important;
+}
+
+.barra_superior {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Distribuye los elementos: logo a la izquierda, menú centrado y barra de búsqueda a la derecha */
+  padding: 10px 20px;
+  background-color: hsl(273, 57%, 75%);
+  border-bottom: 2px solid #ddd;
+  position: relative; /* Necesario para que los elementos dentro de ella se posicionen correctamente */
+}
+
+.img-libria{
+  width: 125px;
+  height: 35px;
+}
+
+.barra_superior nav {
+  display: flex;
+  gap: 15px;
+  justify-content: center; /* Centra los elementos del menú */
+  padding-left: 80px;
+}
+
+.barra_superior nav ul {
+  display: flex;
+  gap: 15px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.barra_superior nav ul li a {
+  color: #ffffff;
+  font-weight: bold;
+  text-decoration: none;
+ padding-left: 30px;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 5px;
+  border-radius: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-left: 20px; /* Espacio entre el menú y la barra de búsqueda */
+  position: relative; /* Necesario para posicionar correctamente el contenedor de la lista */
+}
+
+.search-bar input {
+  border: none;
+  outline: none;
+  padding: 5px 10px;
+  font-size: 14px;
+  width: 200px; /* Ajusta el ancho de la barra de búsqueda */
+}
+
+.search-bar button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 5px;
+  font-size: 16px;
+  color: #666;
+}
+
+.search-bar button:hover {
+  color: #ffffff;
+}
+/* Barra de búsqueda */
+.search-bar {
+  position: relative;
+}
+
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  min-height: 100vh;
+  font-family: "Poppins", sans-serif;
+  background-color: rgb(248, 240, 255);
+}
+
+/* Popup en tonos malva */
+.malva-popup {
+  background: linear-gradient(135deg, hsl(275, 60%, 36%), hsl(273, 81%, 69%));
+  border-radius: 10px;
+  color: #fff;
+  font-family: "Poppins", sans-serif;
+}
+
+/* Botón de confirmación en tono malva */
+.malva-confirm-button {
+  background-color: hsl(275, 60%, 36%) !important;
+  border: none !important;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  color: #fff !important;
+  transition: background-color 0.3s ease;
+}
+
+.malva-confirm-button:hover {
+  background-color: hsl(275, 68%, 24%) !important;
+}
+
+.barra_superior {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: hsl(273, 57%, 75%);
+  border-bottom: 2px solid #ddd;
+  position: relative;
+}
+
+.img-libria {
+  width: 125px;
+  height: 35px;
+}
+/* Contenedor principal del formulario */
+.contact-container {
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 30px;
+  background-color: #f3e9fc; /* Lila clarito */
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  font-family: "Poppins", sans-serif;
+}
+
+/* Título */
+.contact-container h1 {
+  text-align: center;
+  color: #6b2db5; /* Lila fuerte */
+  margin-bottom: 20px;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+/* Etiquetas */
+.contact-container label {
+  display: block;
+  margin-bottom: 5px;
+  color: #6b2db5;
+  font-weight: 500;
+}
+
+/* Campos de entrada */
+.contact-container input[type="text"],
+.contact-container input[type="email"],
+.contact-container textarea {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 20px;
+  border: 2px solid #c9b6e4; /* Lila claro */
+  border-radius: 10px;
+  background-color: #ffffff;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.contact-container input[type="text"]:focus,
+.contact-container input[type="email"]:focus,
+.contact-container textarea:focus {
+  border-color: #a375d3; /* Lila más fuerte */
+  outline: none;
+  box-shadow: 0 0 10px rgba(163, 117, 211, 0.2);
+}
+
+/* Botón de envío */
+.contact-container button {
+  width: 100%;
+  padding: 12px;
+  background-color: #a375d3; /* Lila fuerte */
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.contact-container button:hover {
+  background-color: #8b5bb5; /* Lila oscuro al pasar el mouse */
+  box-shadow: 0 4px 12px rgba(139, 91, 181, 0.4);
+}
+
+/* Responsividad */
+@media (max-width: 600px) {
+  .contact-container {
+    padding: 20px;
+  }
+}
+
+/* Estilo de alerta */
+.contact-container .alert {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px 20px;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  opacity: 0;
+  animation: fadeInOut 3s ease-in-out forwards;
+}
+
+.contact-container .alert-success {
+  background-color: #6b2db5;
+}
+
+.contact-container .alert-error {
+  background-color: #e07cda;
+}
+
+/* Animación para la alerta */
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}

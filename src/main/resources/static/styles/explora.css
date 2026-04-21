@@ -1,0 +1,174 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap");
+
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  min-height: 100vh;
+  font-family: "Poppins", sans-serif;
+ background-color: rgb(248, 240, 255);
+}
+
+/* Popup en tonos malva */
+.malva-popup {
+  background: linear-gradient(135deg, hsl(275, 60%, 36%),hsl(273, 81%, 69%));
+  border-radius: 10px;
+  color: #fff;
+  font-family: "Poppins", sans-serif;
+}
+
+/* Botón de confirmación en tono malva */
+.malva-confirm-button {
+  background-color: hsl(275, 60%, 36%) !important;
+  border: none !important;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  color: #fff !important;
+  transition: background-color 0.3s ease;
+}
+
+.malva-confirm-button:hover {
+  background-color: hsl(275, 68%, 24%) !important;
+}
+
+.barra_superior {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Distribuye los elementos: logo a la izquierda, menú centrado y barra de búsqueda a la derecha */
+  padding: 10px 20px;
+  background-color: hsl(273, 57%, 75%);
+  border-bottom: 2px solid #ddd;
+  position: relative; /* Necesario para que los elementos dentro de ella se posicionen correctamente */
+}
+
+.img-libria{
+  width: 125px;
+  height: 35px;
+}
+
+.barra_superior nav {
+  display: flex;
+  gap: 15px;
+  justify-content: center; /* Centra los elementos del menú */
+  padding-left: 80px;
+}
+
+.barra_superior nav ul {
+  display: flex;
+  gap: 15px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.barra_superior nav ul li a {
+  color: #ffffff;
+  font-weight: bold;
+  text-decoration: none;
+ padding-left: 30px;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 5px;
+  border-radius: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-left: 20px; /* Espacio entre el menú y la barra de búsqueda */
+  position: relative; /* Necesario para posicionar correctamente el contenedor de la lista */
+}
+
+.search-bar input {
+  border: none;
+  outline: none;
+  padding: 5px 10px;
+  font-size: 14px;
+  width: 200px; /* Ajusta el ancho de la barra de búsqueda */
+}
+
+.search-bar button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 5px;
+  font-size: 16px;
+  color: #666;
+}
+
+.search-bar button:hover {
+  color: #ffffff;
+}
+/* Barra de búsqueda */
+.search-bar {
+  position: relative;
+}
+
+/* 📚 Sección de libros dinámicos */
+main {
+  padding: 20px;
+}
+
+#dynamic-books {
+  padding: 20px;
+}
+
+.section-title {
+  text-align: center;
+  font-size: 2rem;
+  margin: 20px 0;
+  color: #6b21a8;
+}
+
+.genre-section {
+  margin-bottom: 40px;
+}
+
+.books-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+/* 📖 Tarjetas de libro */
+.book-card {
+  background-color: #f3e8ff;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 250px;
+  transition: transform 0.3s ease;
+}
+
+.book-card:hover {
+  transform: translateY(-10px);
+}
+
+.book-card img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.book-card h3 {
+  margin-top: 10px;
+  font-size: 1.2rem;
+}
+
+.book-card p {
+  margin: 5px 0;
+  font-size: 0.9rem;
+}
+
+/* 🔚 Footer */
+.footer {
+  background-color: #c084fc;
+  color: white;
+  text-align: center;
+  padding: 10px;
+  margin-top: 20px;
+  font-size: 0.9rem;
+}

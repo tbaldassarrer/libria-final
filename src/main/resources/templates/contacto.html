@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contáctanos</title>
+  <link rel="stylesheet" href="styles/contacto.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</head>
+<body>
+    <div class="barra_superior">
+        <a th:href="@{/home}"><img src="images/libriapeq.png" alt="img Libria" class="img-libria"></a>
+        <nav>
+            <ul>
+                <li></li>
+                <li><a th:href="@{/home}">Home</a></li>
+                <li><a id="btnExplora" th:href="@{/explora}">Explora</a></li>
+                <li><a id="btnComunidades" th:href="@{/comunidades}">Comunidades</a></li>          
+              </ul>
+        </nav>
+        <form class="search-bar" onsubmit="return false;">
+          <input type="text" id="searchBook" placeholder="Buscar un libro..." />
+          <button type="submit" id="searchButton"><i class="fas fa-search"></i></button>
+          <ul id="bookList" class="list-group"></ul>
+        </form>
+        
+      </div>
+  <div class="contact-container">
+    <h1>Contáctanos</h1>
+    <form id="contactForm">
+      <label for="name">Nombre:</label>
+      <input type="text" id="name" name="name" required />
+
+      <label for="email">Correo electrónico:</label>
+      <input type="email" id="email" name="email" required />
+
+      <label for="message">Mensaje:</label>
+      <textarea id="message" name="message" rows="5" required></textarea>
+
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <script src="js/contacto.js"></script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
+  <title>LIBRIA - Iniciar Sesión</title>
+
+  <!-- Bootstrap & MDBootstrap -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.css" rel="stylesheet">
+  
+  <!-- Archivo CSS personalizado -->
+  <link rel="stylesheet" href="/styles/login.css">
+</head>
+<body>
+  <div class="background-image-container"></div>
+
+  <!-- Section: Design Block -->
+  <div class="overlay-container">
+    <div class="container px-4 py-5 px-md-5 text-center text-lg-start my-5">
+      <div class="row gx-lg-5 align-items-center mb-5">
+        <div class="col-lg-6 mb-5 mb-lg-0">
+          <img src="images/login/LIBRiA.png" alt="Logo Libria" class="logo-img">
+          <p class="custom-text">
+            Te ayudamos a realiza un seguimiento de tus lecturas, administrar tus libros y a recordar mejor lo que lees.
+          </p>
+        </div>
+
+        <div class="col-lg-6 position-relative">
+          <div class="card bg-glass">
+            <div class="card-body px-4 py-5 px-md-5">
+              <form action="/login" method="post">
+                <div class="form-outline mb-4">
+                  <input type="text" id="nombreUsuario" name="username" class="form-control" required autocomplete="off" />
+                  <label class="form-label" for="nombreUsuario">Nombre de Usuario</label>
+                </div>
+
+                <div class="form-outline mb-4">
+                  <input type="password" id="password" name="password" class="form-control" required autocomplete="off" />
+                  <label class="form-label" for="password">Contraseña</label>
+                </div>
+
+                <!-- Mensaje de error si el login falla -->
+                <div th:if="${loginError}" class="custom-error-message">
+                  <strong th:text="${loginError}"></strong>
+                </div>
+
+
+                <button type="submit" class="btn custom-btn btn-block mb-4">
+                  Iniciar sesión
+                </button>
+              </form>
+
+              <!-- Botón para abrir el modal de registro -->
+              <div class="text-center">
+                <p>¿Todavía no tienes una cuenta?</p>
+                <button type="button" class="btn custom-btn w-50 mb-4" data-bs-toggle="modal" data-bs-target="#registerModal">
+                  Regístrate
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Registro -->
+  <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="registerModalLabel">Formulario de Registro</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Mensaje de error en el registro -->
+          <div th:if="${registerError}" class="custom-error-message">
+            <strong th:text="${registerError}"></strong>
+          </div>
+
+          <!-- Formulario de Registro -->
+          <form action="/register" method="post">
+            <div class="form-outline mb-4">
+              <input type="text" id="nombreUsuario" name="nombreUsuario" class="form-control" th:value="${nombreUsuario}" required />
+              <label class="form-label" for="nombreUsuario">Nombre de Usuario</label>
+            </div>
+
+            <div class="form-outline mb-4">
+              <input type="email" id="email" name="email" class="form-control" th:value="${email}" required />
+              <label class="form-label" for="email">Correo Electrónico</label>
+            </div>
+
+            <div class="form-outline mb-4">
+              <input type="password" id="password" name="password" class="form-control" required />
+              <label class="form-label" for="password">Contraseña</label>
+            </div>
+
+            <div class="form-outline mb-4">
+              <input type="password" id="reppassword" name="reppassword" class="form-control" required />
+              <label class="form-label" for="reppassword">Repite la Contraseña</label>
+            </div>
+
+            <button type="submit" class="btn custom-btn btn-block mb-4">
+              Crear cuenta
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.0/mdb.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.min.js"></script>
+
+  <!-- Prevención de caché y limpieza de campos -->
+  <script>
+    window.onload = function () {
+        // Limpia los campos al cargar la página
+        document.getElementById("nombreUsuario").value = "";
+        document.getElementById("password").value = "";
+
+        // Evita que el navegador almacene datos de formularios previos
+        if (window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.href);
+        }
+    };
+  </script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+      let registerError = "[[${registerError}]]";
+      let registerSuccess = "[[${registerSuccess}]]";
+
+      // Si hay un error, mostrar la modal automáticamente
+      if (registerError && registerError !== "null" && registerError !== "") {
+          let registerModal = new bootstrap.Modal(document.getElementById("registerModal"));
+          registerModal.show();
+      }
+
+      // Si hay éxito, mostrar modal de éxito automáticamente
+      if (registerSuccess && registerSuccess !== "null" && registerSuccess !== "") {
+          let successModal = new bootstrap.Modal(document.getElementById("registerSuccessModal"));
+          successModal.show();
+      }
+  });
+</script>
+
+</body>
+</html>

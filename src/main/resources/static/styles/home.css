@@ -1,0 +1,1145 @@
+
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap");
+
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  min-height: 100vh;
+  font-family: "Poppins", sans-serif;
+ background-color: rgb(248, 240, 255);
+}
+
+/* Popup en tonos malva */
+.malva-popup {
+  background: linear-gradient(135deg, hsl(275, 60%, 36%),hsl(273, 81%, 69%));
+  border-radius: 10px;
+  color: #fff;
+  font-family: "Poppins", sans-serif;
+}
+
+/* Botón de confirmación en tono malva */
+.malva-confirm-button {
+  background-color: hsl(275, 60%, 36%) !important;
+  border: none !important;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  color: #fff !important;
+  transition: background-color 0.3s ease;
+}
+
+.malva-confirm-button:hover {
+  background-color: hsl(275, 68%, 24%) !important;
+}
+
+.barra_superior {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Distribuye los elementos: logo a la izquierda, menú centrado y barra de búsqueda a la derecha */
+  padding: 10px 20px;
+  background-color: hsl(273, 57%, 75%);
+  border-bottom: 2px solid #ddd;
+  position: relative; /* Necesario para que los elementos dentro de ella se posicionen correctamente */
+}
+
+.img-libria{
+  width: 125px;
+  height: 35px;
+}
+
+.barra_superior nav {
+  display: flex;
+  gap: 15px;
+  justify-content: center; /* Centra los elementos del menú */
+  padding-left: 80px;
+}
+
+.barra_superior nav ul {
+  display: flex;
+  gap: 15px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.barra_superior nav ul li a {
+  color: #ffffff;
+  font-weight: bold;
+  text-decoration: none;
+ padding-left: 30px;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 5px;
+  border-radius: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-left: 20px; /* Espacio entre el menú y la barra de búsqueda */
+  position: relative; /* Necesario para posicionar correctamente el contenedor de la lista */
+}
+
+.search-bar input {
+  border: none;
+  outline: none;
+  padding: 5px 10px;
+  font-size: 14px;
+  width: 200px; /* Ajusta el ancho de la barra de búsqueda */
+}
+
+.search-bar button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 5px;
+  font-size: 16px;
+  color: #666;
+}
+
+.search-bar button:hover {
+  color: #ffffff;
+}
+/* Barra de búsqueda */
+.search-bar {
+  position: relative;
+}
+
+/* Estilos para la lista desplegable de libros */
+#bookList {
+  position: absolute;
+  top: 100%; /* Coloca la lista justo debajo del input */
+  left: 0;
+  width: 100%; /* Asegura que la lista tenga el mismo ancho que el input */
+  max-height: 200px; /* Limita la altura del desplegable */
+  overflow-y: auto; /* Hace scroll si hay demasiados elementos */
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  z-index: 1000;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#bookList .list-group-item {
+  padding: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+#bookList .list-group-item:last-child {
+  border-bottom: none;
+}
+
+#bookList .list-group-item:hover {
+  background-color: #f8f9fa;
+}
+
+
+
+#bookList {
+  position: absolute;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  list-style: none;
+  padding: 0;
+  margin-top: 5px;
+  display: none;
+}
+
+#bookList .list-group-item {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+#bookList .list-group-item:hover {
+  background-color: #f8f9fa;
+}
+
+/* Ajuste de la ventana emergente */
+/* Contenedor del overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6); /* Color negro con opacidad */
+  display: none; /* Se oculta por defecto */
+  z-index: 999; /* Asegura que el overlay esté por encima del contenido */
+}
+/* Mostrar el overlay cuando se active */
+.overlay.active {
+  display: block; /* Hace visible el overlay */
+}
+.popup {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60%;
+  max-width: 800px;
+  max-height: 70vh;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+/* Contenedor principal con flexbox */
+.popup-details {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  padding-left: 30px;
+}
+
+/* Ajuste de la imagen del libro */
+.book-cover {
+  max-width: 160px;
+  height: auto;
+  border-radius: 5px;
+  display: block;
+  box-shadow: 0px 8px 11px rgba(0, 0, 0, 0.3);
+}
+
+/* Contenedor derecho que tendrá la info  */
+.book-details {
+  display: flex;
+  flex-direction: column; /* Coloca info arriba y sinopsis debajo */
+  flex-grow: 1;
+  position: relative; /* Agregado para permitir la colocación de los botones */
+}
+
+/* Estilos para el título */
+.book-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* Contenedor de la información del libro */
+.book-info {
+  text-align: justify;
+  margin-bottom: 20px; /* Añadido para espacio antes de los botones */
+  padding-left: 30px;
+}
+
+/* Contenedor de botones alineados a la derecha */
+.book-actions {
+  top: 0; /* Los coloca arriba */
+  left: 60%; /* Los centra horizontalmente */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 70px; /* Espacio superior */
+  text-align: justify;
+}
+
+
+/* Botones */
+.book-actions button {
+  background-color: hsl(273, 42%, 65%);
+  color: #ffffff; /* Malva */
+  padding: 10px 15px;
+  cursor: pointer;
+  font-family: "Poppins", sans-serif;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.book-actions button:hover {
+  background-color: #7739a3; /* Un tono más oscuro al pasar el mouse */  
+  color: white;
+}
+
+/* Contenedor de la sinopsis del libro */
+.book-synopsis {
+  margin-top: 40px;
+  padding-left: 30px;
+  padding-right: 50px;
+  text-align: justify;
+}
+
+/* Botón de cerrar */
+.close-popup {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+
+/*////////////////////*/
+
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+a {
+  text-decoration: none;
+}
+header {
+  position: relative;
+  height: 380px; 
+  background-size: cover;
+  background-position: center;
+}
+
+#edit-bg-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+#edit-bg-btn:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.background-options {
+  display: none;
+  position: absolute;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  max-height: 70vh; /* Altura máxima */
+  overflow-y: auto; /* Scroll vertical si es necesario */
+  max-width: 700px; /* Ancho máximo */
+  text-align: center;
+}
+
+.background-options img {
+  width: 150px;
+  height: 90px;
+  cursor: pointer;
+  margin: 5px;
+  border-radius: 5px;
+  transition: transform 0.2s;
+}
+
+.background-options img:hover {
+  transform: scale(1.1);
+}
+
+
+.header__wrapper header {
+  width: 100%;
+  background: url("../images/header/header3.jpg") no-repeat 50% 20% / cover;
+  min-height: 40vh; /* Asegura que tenga al menos el 60% de la altura de la ventana */
+  height: auto; /* Deja que la altura se ajuste automáticamente */
+  overflow: hidden; /* Evita que aparezca la barra de desplazamiento */
+}
+
+.close-header {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/*////////IMAGEN DE PERFIL///////////*/
+.img__container {
+  position: relative;
+}
+
+.edit-icon {
+  position: absolute;
+  bottom: 5px;
+  left: 25px;
+  font-size: 15px;
+  color: white;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 5px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.modal-profile {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  padding: 20px;
+  overflow: auto; /* Para evitar que el contenido se desborde */
+  text-align: center;
+  box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
+}
+
+@media (max-width: 768px) {
+  .modal-profile {
+    width: 95%;
+    padding: 15px;
+  }
+}
+
+
+.modal-content-profile h3 {
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+.profile-options {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.profile-option {
+  width: 130px;
+  height: 130px;
+  object-fit: cover;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.profile-option:hover {
+  border: 2px solid rgb(140, 72, 204);
+}
+
+.close-modal {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/*/////////////*/
+
+.header__wrapper .cols__container .left__col {
+  padding: 25px 20px;
+  text-align: center;
+  max-width: 350px;
+  position: relative;
+  margin: 0 auto;
+}
+
+.header__wrapper .cols__container .left__col .img__container {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translatex(-50%);
+}
+.header__wrapper .cols__container .left__col .img__container img {
+  width: 180px;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+  box-shadow: 1px 3px 12px rgba(0, 0, 0, 0.18);
+}
+
+.header__wrapper .cols__container .left__col h2 {
+  margin-top: 120px;
+  font-weight: 600;
+  font-size: 22px;
+  margin-bottom: 5px;
+color: rgb(140, 72, 204);}
+
+.header__wrapper .cols__container .left__col p {
+  font-size: 0.9rem;
+  color: #818181;
+  margin: 0;
+}
+.header__wrapper .cols__container .left__col .divisor {
+  justify-content: space-between;
+  position: relative;
+  margin: 25px 0px;
+}
+
+.header__wrapper .cols__container .left__col .divisor:after {
+  position: absolute;
+  content: "";
+  bottom: 16px;
+  display: block;
+  background: #cccccc;
+  height: 1px;
+  width: 100%;
+}
+.header__wrapper .cols__container .content p {
+  
+  font-size: 1rem;
+  color: #4a4a4a !important;
+  line-height: 1.8em;
+  margin-top: 20px;
+}
+.header__wrapper .cols__container .content ul {
+  gap: 40px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 55px;
+}
+.header__wrapper .cols__container .content ul li {
+  display: flex;
+}
+.header__wrapper .cols__container .content ul i {
+  font-size: 1.3rem;
+}
+.content h2{
+  margin-top: 50px !important;}
+
+
+/* /////////LECTURA ACTUAL///////// */
+.reading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 30px;
+  background-color: rgb(240, 224, 255);
+  padding: 15px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  text-align: center;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+#currentReading {
+  font-weight: bold;
+  font-size: 14px;
+  color: #4a4a4a;
+}
+
+.reading-text {
+  color: rgb(140, 72, 204);
+  font-weight: bold;
+  font-size: 20px;
+  
+  font-family: "Poppins", sans-serif;
+}
+
+.reading-container .divisor2 {
+  width: 100%;
+  height: 1px;
+  background: #d6d6d6;
+  margin: 8px 0;
+}
+
+.book-details2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.book-cover2 {
+  width: 80px;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.book-info2 {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 14px;
+}
+
+.btn-finish {
+  background-color: #6c39a1;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background-color 0.3s ease;
+}
+
+.btn-finish:hover {
+  background-color: #4a2671;
+}
+
+
+
+/*////////////MODAL PARA RESEÑA Y PUNTUACION//////////*/
+.overlay-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 500px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  z-index: 1000;
+  text-align: center;
+}
+
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.close-modal {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.stars {
+  font-size: 25px;
+  cursor: pointer;
+  margin-bottom: 15px;
+}
+
+.stars span:hover {
+  color: gold;
+}
+
+textarea {
+  width: 90%;
+  height: 100px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  font-family: "Poppins", sans-serif;
+}
+
+button {
+  background-color: hsl(273, 42%, 65%);
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #552280;
+}
+
+/*/////////CONTENEDOR DE LAS PESTAÑAS/////////////*/
+
+.header__wrapper .cols__container .right__col {
+  overflow: visible; /* Evita que aparezca la barra de desplazamiento vertical */
+}
+#biblio h2{
+  padding-top: 60px;
+  color: rgb(140, 72, 204) !important;
+
+}
+.header__wrapper .cols__container .right__col nav {
+  display: flex;
+  align-items: center;
+  padding: 30px 0;
+  justify-content: space-between;
+  flex-direction: column;
+}
+.header__wrapper .cols__container .right__col nav ul {
+  display: flex;
+  gap: 20px;
+  flex-direction: column;
+}
+.header__wrapper .cols__container .right__col nav ul li a {
+  text-transform: uppercase;
+  color: #818181;
+  font-weight: normal;
+  transition: font-weight 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+.header__wrapper .cols__container .right__col nav ul li a.active {
+  font-weight: bold;
+  color: black;
+}
+#library h2 {
+  text-align: center; 
+  font-size: 24px; 
+  font-weight: bold; 
+  font-family: "Poppins", sans-serif; 
+  margin-top: 0;
+  margin-bottom: 20px; 
+  letter-spacing: 1px; 
+  display: inline-block; 
+}
+
+/*////////////LIBROS LEIDOS//////////*/
+.leidos {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 columnas */
+  gap: 20px; /* Espacio entre los libros */
+  width: 100%; /* Asegura que ocupe el 100% del contenedor */
+  height: 100%; /* Asegura que ocupe toda la altura disponible */
+  padding-bottom: 100px;
+}
+
+.leidos img {
+  width: 100%; /* Hace que la imagen ocupe todo el ancho disponible de su contenedor */
+  height: 250px; /* Fija la altura de las imágenes */
+  object-fit: cover; /* Recorta y ajusta la imagen para que llene el contenedor sin deformarse */
+  border-radius: 8px; /* Bordes redondeados */
+  transition: transform 0.3s ease-in-out; /* Suaviza la transición de zoom */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3); /* Sombra ligera */
+}
+.leidos img:hover {
+  transform: scale(1.05); /* Efecto de zoom al pasar el mouse */
+}
+
+
+
+/*////////////FAVORITOS//////////*/
+#favorites h2 {
+  text-align: center; 
+  font-size: 24px; 
+  font-weight: bold; 
+  font-family: "Poppins", sans-serif; 
+  margin-top: 0;
+  margin-bottom: 20px; 
+  letter-spacing: 1px; 
+  display: inline-block; 
+}
+
+.favoritos {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); 
+  gap: 20px; 
+  width: 100%; 
+  height: 100%; 
+  padding-bottom: 50px;
+}
+
+.favoritos img {
+  width: 100%; 
+  height: 250px; 
+  object-fit: cover; 
+  border-radius: 8px; 
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3); 
+  cursor: pointer; 
+  transition: transform 0.3s ease-in-out;
+  
+}
+
+.favoritos img:hover {
+  transform: scale(1.05); 
+}
+
+
+
+/*////////////PROXIMAS LECTURAS//////////*/
+.proxLecturas {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); 
+  gap: 20px; 
+  width: 100%; 
+  height: 100%; 
+  padding-bottom: 100px;
+}
+
+.proxLecturas img {
+  width: 100%; 
+  height: 250px; 
+  object-fit: cover; 
+  border-radius: 8px; 
+  transition: transform 0.3s ease-in-out; 
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.3);
+}
+.proxLecturas img:hover {
+  transform: scale(1.05); 
+}
+
+
+
+/*////////////MIS RESEÑAS//////////*/
+.resenias {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  justify-content: center;
+  max-width: 700px; /* Ajusta según el diseño */
+  margin: auto;
+  height: 100%; 
+  padding-bottom: 100px;
+}
+
+.resenia-card {
+  width: 300px;
+  padding: 20px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  background-color: #f8f9fa;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  position: relative;
+  transition: transform 0.3s ease-in-out; /* Suaviza la transición de zoom */
+
+  
+}
+.resenia-card:hover {
+  transform: scale(1.05); /* Efecto de zoom al pasar el mouse */
+}
+.resenia-card::before {
+  content: "“";
+  font-size: 40px;
+  color: #999;
+  position: absolute;
+  top: -10px;
+  left: 10px;
+}
+.resenia-card::after {
+  content: "”";
+  font-size: 40px;
+  color: #999;
+  position: absolute;
+  bottom: -10px;
+  right: 10px;
+}
+.resenia-autor {
+  font-weight: bold;
+  margin-top: 10px;
+  font-style: italic;
+  color: #555;
+}
+
+.logout-button {
+  background-color: hsl(273, 57%, 75%);
+  border-radius: 10px;
+  color: #ffffff;
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-family: "Poppins", sans-serif;
+  margin-top: 50px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.logout-button:hover {
+  background-color: #7739a3;
+  color: white;
+}
+.stars {
+  display: flex;
+  justify-content: center;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+.stars span {
+  color: #ccc; /* Color de estrellas vacías */
+  transition: color 0.3s ease-in-out;
+}
+
+.stars span:hover,
+.stars span.hovered {
+  color: gold !important; /* Cambia a dorado cuando pasas el ratón */
+}
+
+.stars span.selected {
+  color: gold !important; /* Fija el color dorado cuando seleccionas */
+}
+
+
+/*////////////DESAFIO DE LECTURA//////////////*/
+
+.progress-wrapper {
+  margin-bottom: 15px;
+  background-color: rgb(240, 224, 255); 
+  border-radius: 8px;        /* Bordes redondeados */
+  padding: 5px;              /* Espacio interno para que el contenido no quede pegado a los bordes */
+  margin-top: 55px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+.progress-wrapper h2 {
+  margin-top: 10px !important;
+  color: rgb(140, 72, 204) !important;
+  font-size: 20px !important;
+  font-weight: bold;
+
+
+}
+.progress-wrapper p {
+  color: #4a4a4a !important;
+  font-size: 18px !important;
+  padding-bottom: 10px;
+  font-weight: bold;
+
+}
+
+
+.progress-labels {
+  display: flex;
+justify-content: center;
+  align-items:center;
+
+  color: #333;
+}
+.progress-labels p{
+font-size: 14px !important;
+font-weight:100 !important;
+}
+
+
+#targetDisplay {
+  padding: 2px 5px;
+  border: 1px dashed transparent;
+  cursor: pointer;
+  min-width: 40px;
+  text-align: right;
+}
+
+
+#targetDisplay:focus {
+  outline: none;
+  border: 1px dashed #aaa;
+}
+
+
+.progress-container {
+  background-color: rgb(248, 240, 255);
+  border-radius: 5px;
+  overflow: hidden;
+  height: 25px;
+}
+
+
+.progress-bar {
+  background-color: #9442c0;
+  height: 100%;
+  width: 0%;
+  transition: width 0.5s ease;
+}
+
+/*  RESPONSIVE  */
+
+@media (min-width: 868px) {
+  .header__wrapper .cols__container {
+    max-width: 1200px;
+    height: auto; /* Fijar la altura a 900px */
+    margin: 0 auto;
+    width: 90%;
+    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 50px;
+  }
+
+  .header__wrapper .cols__container .right__col nav ul {
+    flex-direction: row;
+    gap: 30px;
+  }
+  .header__wrapper .cols__container .left__col {
+    padding: 25px 0px;
+  }
+  /*.header__wrapper .cols__container .right__col .leidos {
+    flex-grow: 1; /* Permite que el contenedor crezca verticalmente 
+    height: 60%;
+    overflow: auto;
+    padding: 0 0 30px;
+  }*/
+}
+
+@media (min-width: 1017px) {
+  .header__wrapper .cols__container .left__col {
+    margin: 0;
+    margin-right: auto;
+  }
+  .header__wrapper .cols__container .right__col nav {
+    flex-direction: row;
+  }
+  .header__wrapper .cols__container .right__col nav button {
+    margin-top: 0;
+  }
+}
+@media (max-width: 600px) {
+  .background-options {
+    width: 95%; /* En pantallas más pequeñas, ocupa el 60% del ancho */
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 768px) {
+  .popup {
+    width: 90%;
+    max-width: 400px;
+    max-height: 80vh;
+    padding: 15px;
+  }
+
+  .popup-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .book-actions {
+    align-items: center;
+  }
+}
+
+
+
+/* Para pantallas medianas (por ejemplo, < 992px) */
+@media (max-width: 992px) {
+  /* Ajusta si lo deseas:
+     - Podrías reducir el .search-bar input a un width menor
+     - Podrías reducir paddings para que no se vea tan ancho */
+  .search-bar input {
+    width: 150px;
+  }
+}
+
+/* Para pantallas pequeñas (por ejemplo, < 768px) */
+@media (max-width: 768px) {
+
+  /* 1) Barra superior en columna */
+  .barra_superior {
+    flex-direction: column;    /* Apila logo, menú y búsqueda */
+    align-items: center;       /* Centra verticalmente */
+    gap: 10px;                 /* Espacio entre elementos */
+  }
+
+  .barra_superior nav {
+    padding-left: 0;          /* Quita el padding extra */
+  }
+
+  .barra_superior nav ul {
+    flex-direction: row;       /* El menú en una sola fila */
+    gap: 10px;
+  }
+
+  .search-bar {
+    margin-left: 0;
+    margin-top: 10px;          /* Separación si se apila debajo */
+  }
+
+  .search-bar input {
+    width: 120px;              /* Más pequeño en móvil */
+  }
+
+  /* 2) Contenedor principal en columna */
+  .header__wrapper .cols__container {
+    display: flex;
+    flex-direction: column;    /* Apila la columna izquierda y derecha */
+    gap: 20px;                 /* Espacio entre ellas */
+    width: 95%;
+    margin: 0 auto;            /* Centra el contenido */
+  }
+
+  /* Para que left__col y right__col ocupen todo el ancho */
+  .header__wrapper .cols__container .left__col,
+  .header__wrapper .cols__container .right__col {
+    width: 100%;
+  }
+
+  /* 3) Ajusta grids a 2 columnas (o 1) si deseas */
+  .leidos,
+  .favoritos,
+  .proxLecturas {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Para resenias, si quieres que sea 1 por fila en pantallas muy pequeñas */
+  .resenias {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
+/* Para pantallas muy pequeñas (por ejemplo, < 480px) */
+@media (max-width: 480px) {
+  /* Podrías cambiar a 1 columna en los grids */
+  .leidos,
+  .favoritos,
+  .proxLecturas {
+    grid-template-columns: 1fr;
+  }
+
+  .search-bar input {
+    width: 100px;
+  }
+}
+
+/* Para pantallas pequeñas (ej. <= 768px) */
+@media (max-width: 768px) {
+  .popup {
+    width: 90%;
+    max-width: 400px;    /* Limita más el ancho en móvil */
+    padding: 15px;       /* Menos padding */
+  }
+
+  .popup-details {
+    flex-direction: column; /* Apila la imagen y el texto */
+    align-items: center;
+    gap: 10px;
+    padding-left: 0;        /* Quita padding extra */
+  }
+
+  .book-cover {
+    max-width: 120px;       /* Imagen más pequeña en móvil */
+  }
+
+  .book-info {
+    padding-left: 0;
+    margin-bottom: 10px;
+    text-align: center;     /* Opcional: centrar texto en móvil */
+  }
+
+  .book-actions {
+    position: static;       /* Quita position absoluta */
+    padding-top: 0;
+    align-items: center;
+    margin-top: 10px;
+  }
+
+  .book-synopsis {
+    margin-top: 20px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+

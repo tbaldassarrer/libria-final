@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home Libria</title>
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+    />
+    <!-- CSS -->
+    <link rel="stylesheet" href="styles/home.css" />
+
+     <!-- JS --> 
+    
+    <script src="js/home.js"></script>
+    <script src="js/book.js"></script>
+    <script src="js/reading.js"></script>
+    <script src="js/review.js"></script>
+    <script src="js/user.js"></script>
+    <script src="js/favorites.js"></script>
+   
+
+  </head>
+  <body>
+
+    <div class="barra_superior">
+      <a th:href="@{/home}"><img src="images/libriapeq.png" alt="img Libria" class="img-libria"></a>
+      <nav>
+          <ul>
+              <li></li>
+              <li><a id="btnExplora" th:href="@{/explora}">Explora</a></li>
+              <li><a id="btnComunidades" th:href="@{/comunidades}">Comunidades</a></li>
+              <li><a th:href="@{/contacto}">Contacto</a></li>          
+            </ul>
+      </nav>
+      <form class="search-bar" onsubmit="return false;">
+          <input type="text" id="searchBook" placeholder="Buscar un libro..." />
+          <button type="submit" id="searchButton"><i class="fas fa-search"></i></button>
+          <ul id="bookList" class="list-group"></ul>
+      </form>
+    </div>
+
+  <!-- Ventana emergente -->
+  <div class="overlay"></div>
+<div id="popupWindow" class="popup">
+  <div class="popup-content">
+    <span class="close-popup">&times;</span>
+    
+    <div class="popup-details">
+      <img id="bookCover" src="" alt="Portada del libro" class="book-cover" />
+      <div class="book-info">
+        <h2 id="bookTitle"></h2>
+        <p><strong>Autor:</strong> <span id="bookAuthor"></span></p>
+        <p><strong>Género:</strong> <span id="bookGenre"></span></p>
+        <p><strong>Año de Edición:</strong> <span id="bookYear"></span></p>
+        <p><strong>Puntuación:</strong> <span id="bookRating"></span> ⭐</p>
+      </div>
+      <div class="book-actions">
+        <button class="btn-action" onclick="addToLibrary(document.getElementById('bookTitle').textContent)">Añadir a libros leídos</button>
+        <button class="btn-action">Comenzar a leer</button>
+        <button class="btn-action" onclick="addToUpcomingReads(document.getElementById('bookTitle').textContent, document.getElementById('bookCover').src)">Añadir a próximas lecturas</button>
+
+      </div>
+    </div>
+
+    <div class="book-synopsis">
+      <p><strong>Sinopsis:</strong></p>
+      <p id="bookSynopsis"></p>
+    </div>
+    <!-- Contenedor de botones alineados a la derecha -->
+  
+  </div>
+</div>
+
+
+    <div class="header__wrapper">
+      <header>    <button id="edit-bg-btn">Editar</button>
+      </header>
+
+      <div class="background-options" id="bg-options">
+        <span class="close-header" onclick="closeHeaderModal()">&times;</span>
+        <h3>Selecciona tu imagen de portada:</h3>
+        <img src="images/header/header1.jpg" alt="Background 1" class="bg-option" />
+        <img src="images/header/header2.jpg" alt="Background 2" class="bg-option" />
+        <img src="images/header/header3.jpg" alt="Background 3" class="bg-option" />
+        <img src="images/header/header4.jpg" alt="Background 4" class="bg-option" />
+      </div>
+      
+      <div class="cols__container">
+        <div class="left__col">
+          <div class="img__container">
+            <img id="profileImg" src="images/perfil/chica1-02.png" alt="Imagen de perfil" />
+            <span id="editProfileIcon" class="edit-icon">&#9998;</span> <!-- Icono de edición -->
+          </div>
+          
+          <!-- Modal para elegir imagen de perfil -->
+          <div id="profileModal" class="modal-profile">
+            <div class="modal-content-profile">
+              <span class="close-modal" onclick="closeProfileModal()">&times;</span>
+              <h3>Selecciona tu imagen de perfil:</h3>
+              <div class="profile-options">
+                <img src="images/perfil/chica1-02.png" class="profile-option" alt="Perfil 1" />
+                <img src="images/perfil/chica2-02.png" class="profile-option" alt="Perfil 2" />
+                <img src="images/perfil/chico1-02.png" class="profile-option" alt="Perfil 3" />
+                <img src="images/perfil/chico2-02.png" class="profile-option" alt="Perfil 4" />
+              </div>
+            </div>
+          </div>
+          
+          <h2><span th:text="${username}">Usuario</span></h2>
+          <p>Lectora a tiempo completo</p>
+          
+
+
+<!-- Contenedor de la barra de progreso -->
+<div class="progress-wrapper">
+  <h2>Desafío de lectura 2025</h2>
+  <div class="divisor">            
+  </div>
+  <p>Leer:      <!-- Elemento editable para definir el objetivo -->
+    <span id="targetDisplay" contenteditable="true" title="Haz click para editar el objetivo" style="text-decoration: underline; color: rgb(140, 72, 204)">10</span>libros</p>
+  <div class="progress-labels">
+    <p>Libros completados: &nbsp;  <span id="completedLabel"> 0</span>
+    </p>
+
+  </div>
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+
+</div>
+
+
+
+          <div class="content">
+            <h2>✨ Mis citas favoritas ✨</h2>
+            <p><em>"Si el mundo desapareciera y él se salvara, yo seguiría viviendo. Pero si desapareciera él y lo demás continuara igual, yo no podría vivir." </em><br> <strong>- Cumbres Borrascosas</strong></p>
+            <p><em>"La rabia puede calentarte por la noche, y el orgullo herido puede alentar a un hombre hacer cosas maravillosas" </em><br> <strong>- El nombre del viento</strong></p>
+
+            <ul>
+              <li><i class="fab fa-twitter"></i></li>
+              <i class="fab fa-pinterest"></i>
+              <i class="fab fa-facebook"></i>
+              <i class="fab fa-dribbble"></i>
+            </ul>
+          </div>
+          <form th:action="@{/logout}" method="post">
+            <button type="submit" class="logout-button ">
+                <a class="text-logout">Cerrar sesión</a>
+            </button>
+        </form>
+        </div>
+
+
+
+        <div class="right__col">
+
+
+<!-- Contenedor de lectura actual -->
+<div class="reading-container" >
+  <div class="reading-text">
+      <a>Lectura actual:</a>
+  </div>
+  <div class="divisor2"></div>
+  <div class="book-details2">
+      <img id="coverImage" src="" alt="Portada del libro" class="book-cover2">
+      <div class="book-info2">
+          <a id="currentReading" data-book-id="">Cargando...</a>
+          <p id="readingStartDate">Fecha de inicio: --</p>
+          <button id="finishReading" class="btn-finish">Finalizar lectura</button>
+      </div>
+  </div>
+</div>
+<!-- Overlay del modal -->
+<div class="overlay-modal" id="overlayModal"></div>
+
+<!-- Modal de puntuación y reseña -->
+<div id="finishReadingModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeFinishReadingModal()">&times;</span>
+        <h3>Puntúa y reseña el libro</h3>
+
+       <!-- Estrellas de puntuación -->
+<div class="stars">
+  <span data-value="1">★</span>
+  <span data-value="2">★</span>
+  <span data-value="3">★</span>
+  <span data-value="4">★</span>
+  <span data-value="5">★</span>
+</div>
+        <!-- Campo de reseña -->
+        <textarea id="reviewText" placeholder="Escribe tu reseña aquí..."></textarea>
+
+  
+<!-- Botón para guardar -->
+<button id="submitReview" onclick="submitReview()">Guardar</button>
+    </div>
+</div>
+
+        
+          <!-- Navegación de categorías -->
+           <div id="biblio">
+          <h2>Mi biblioteca 📖 </h2>
+        </div>
+          <nav>            
+            <ul>
+              <li><a href="#" id="library-link">Libros leídos</a></li>
+              <li><a href="#" id="favorites-link">Favoritos</a></li>
+              <li><a href="#" id="upcoming-link">Próximas lecturas</a></li>
+              <li><a href="#" id="reviews-link">Mis reseñas</a></li>
+            </ul>
+          </nav>
+        
+          <!-- Contenedor donde se cambia el contenido -->
+          <div class="content-container">
+            <div id="library" class="content-section">
+
+              <div class="leidos">
+
+                 
+ 
+              </div>
+            </div>
+        
+            <div id="favorites" class="content-section" style="display:none;">
+              <h2>Mis libros 5 ⭐</h2>
+              <div class="favoritos">
+                
+
+                
+                <!-- Agrega  fotos o contenido dinámico aquí -->
+              </div>
+            </div>
+        
+            <div id="upcoming" class="content-section" style="display:none;">
+              <div class="proxLecturas">
+                    
+              </div>
+              <!-- Contenido de próximas lecturas -->
+            </div>
+        
+            <div id="reviews" class="content-section" style="display:none;">
+              <div class="resenias d-flex flex-wrap justify-content-center gap-3">
+                  <div class="resenia-card">
+                      <p>"Este libro me atrapó desde la primera página. ¡Increíble historia!"</p>
+                      <div class="resenia-autor">- El Nombre del Viento</div>
+                  </div>
+                  <div class="resenia-card">
+                      <p>"Una historia conmovedora con personajes inolvidables."</p>
+                      <div class="resenia-autor">- Cumbres Borrascosas</div>
+                  </div>
+                  <div class="resenia-card">
+                      <p>"Definitivamente lo recomendaría a cualquier amante de la literatura."</p>
+                      <div class="resenia-autor">- Orgullo y Prejuicio</div>
+                  </div>
+                  <div class="resenia-card">
+                    <p>"Un mundo lleno de dragones, intrigas y personajes que amarás"</p>
+                    <div class="resenia-autor">- Alas de Sangre</div>
+                </div>
+              </div>
+          </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+
+<!-- Bootstrap JS para la ventana emergente -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>  
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</body>
+</html>
+
+

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Libria - Explora</title>
+    <link rel="stylesheet" href="styles/explora.css" />
+</head>
+<body>
+
+  <div class="barra_superior">
+    <a th:href="@{/home}"><img src="images/libriapeq.png" alt="img Libria" class="img-libria"></a>
+    <nav>
+        <ul>
+            <li></li>
+            <li><a th:href="@{/home}">Home</a></li>
+            <li><a id="btnExplora" th:href="@{/explora}">Explora</a></li>
+            <li><a id="btnComunidades" th:href="@{/comunidades}">Comunidades</a></li>    
+            <li><a th:href="@{/contacto}">Contacto</a></li>          
+      
+          </ul>
+    </nav>
+    <form class="search-bar" onsubmit="return false;">
+        <input type="text" id="searchBook" placeholder="Buscar un libro..." />
+        <button type="submit" id="searchButton"><i class="fas fa-search"></i></button>
+        <ul id="bookList" class="list-group"></ul>
+    </form>
+  </div>
+
+  <!-- Contenido principal de la página -->
+  <main>
+    <!-- Sección de libros dinámicos -->
+    <section id="dynamic-books">
+      <h1 class="section-title">📚 Descubre los libros mejor puntuados por género 📚</h1>
+
+      <!-- Sección de libros de Fantasía -->
+      <div id="fantasy" class="genre-section">
+        <h2 class="section-title">🐉 Fantasía</h2>
+        <div class="books-container" id="fantasy-books"></div>
+      </div>
+
+      <!-- Sección de libros de Romance -->
+      <div id="romance" class="genre-section">
+        <h2 class="section-title">💖 Romance</h2>
+        <div class="books-container" id="romance-books"></div>
+      </div>
+      <!-- Sección de libros de Ciencia Ficción -->
+<div id="science_fiction" class="genre-section">
+  <h2 class="section-title">🚀 Ciencia Ficción</h2>
+  <div class="books-container" id="science_fiction-books"></div>
+</div>
+
+<!-- Sección de libros de Misterio -->
+<div id="mystery" class="genre-section">
+  <h2 class="section-title">🕵️ Misterio</h2>
+  <div class="books-container" id="mystery-books"></div>
+</div>
+
+<!-- Sección de libros de Historia -->
+<div id="history" class="genre-section">
+  <h2 class="section-title">📜 Historia</h2>
+  <div class="books-container" id="history-books"></div>
+</div>
+
+    </section>
+  </main>
+
+  <!-- Footer (opcional, si tienes uno) -->
+  <footer class="footer">
+    <p>© 2024 Libria. Todos los derechos reservados.</p>
+  </footer>
+
+  <!-- Enlace al archivo JavaScript -->
+  <script src="/js/explora.js"></script>
+</body>
+</html>

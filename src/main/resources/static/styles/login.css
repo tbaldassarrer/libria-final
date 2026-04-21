@@ -1,0 +1,277 @@
+
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap");
+
+body {
+    background-color: hsl(0, 0%, 100%);
+    background-image: radial-gradient(650px circle at 0% 0%, hsl(270, 64%, 60%) 15%, hsl(270, 64%, 55%) 35%, hsl(270, 64%, 45%) 75%, hsl(270, 64%, 44%) 80%, transparent 100%),
+                      radial-gradient(1250px circle at 100% 100%, hsl(270, 64%, 60%) 15%, hsl(270, 64%, 55%) 35%, hsl(270, 64%, 45%) 75%, hsl(270, 64%, 44%) 80%, transparent 100%);
+    background-size: cover;
+    background-position: center top, center bottom;
+    background-attachment: fixed;
+    background-repeat: repeat-y, repeat-y;
+    font-family: "Poppins", sans-serif;
+    
+  }
+  
+  .background-image-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/images/login/fondo web-02.png');
+    background-size: cover;
+    background-position: center;
+    z-index: -1; /* Esto coloca la imagen de fondo detrás del contenido */
+    opacity: 0.8;
+  }
+  .overlay-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    background: rgba(91, 23, 137, 0.7); /* Color blanco con opacidad */
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  .overlay-container img{
+    height: 190px;
+    width: 490px;
+  }
+  
+  .bg-glass {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: saturate(200%) blur(25px);
+    border-radius: 10px;
+    padding: 30px;
+  }
+  
+  .text-white {
+    color: white !important;
+  }
+  
+  .text-primary {
+    color: #ddaef9 !important;
+  }
+  
+  .custom-btn {
+    background-color: #9a48d5; /* Malva */
+    color: white; /* Texto en blanco */
+    border: none; /* Sin borde */
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: background-color 0.3s ease-in-out;
+  }
+  
+  .btn:hover {
+    background-color: #632c8b; /* Un tono más oscuro al pasar el mouse */
+    color: white;
+  }
+  
+  .custom-title {
+    font-size: 58px;
+    font-weight: 700;
+    color: hsl(218, 81%, 95%);
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.6); /* Sombra */
+
+  }
+  
+  .custom-subtitle {
+    font-size: 38px;
+
+    font-weight: 700;
+    color: hsl(280, 79%, 89%);
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.6); /* Sombra */
+
+  }
+  
+  .custom-text {
+    font-size: 20px;
+margin-top: 20px;
+    color: #f1ddfe;
+
+    line-height: 1.6;
+    text-shadow: 2px 2px 5px rgba(62, 11, 85, 0.6); /* Sombra */
+
+  }
+  
+  .custom-error-message {
+    background-color: rgba(154, 72, 213, 0.2); /* Lila suave */
+    color: #9a48d5; /* Lila oscuro para el texto */
+    border: 2px solid #9a48d5; /* Borde lila */
+    border-radius: 8px;
+    padding: 10px;
+    font-weight: bold;
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    margin: 10px auto;
+    box-shadow: 0px 4px 10px rgba(154, 72, 213, 0.3);
+}
+.custom-success-message {
+  background-color: rgba(154, 72, 213, 0.2);
+  color: #5a2d82;
+  border: 2px solid #5a2d82;
+  border-radius: 8px;
+  padding: 10px;
+  font-weight: bold;
+  text-align: center;
+  width: 100%;
+  margin-bottom: 10px;
+  box-shadow: 0px 4px 10px rgba(154, 72, 213, 0.3);
+}
+.modal-content {
+  position: relative;
+  z-index: 1050;
+}
+
+.modal-backdrop {
+  z-index: 1040;
+}
+
+/*  RESPONSIVE   */
+
+
+/* Pantallas medianas (ej. <= 992px) */
+@media (max-width: 992px) {
+  .overlay-container {
+    width: 90%;
+    padding: 20px;
+  }
+  
+  .overlay-container img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  .custom-title {
+    font-size: 40px;
+  }
+  
+  .custom-subtitle {
+    font-size: 28px;
+  }
+  
+  .custom-text {
+    font-size: 18px;
+  }
+}
+
+/* Pantallas pequeñas (ej. <= 768px) */
+@media (max-width: 768px) {
+  .overlay-container {
+    width: 95%;
+    padding: 15px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .overlay-container img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .custom-title {
+    font-size: 32px;
+  }
+
+  .custom-subtitle {
+    font-size: 24px;
+  }
+
+  .custom-text {
+    font-size: 16px;
+  }
+}
+
+/* Pantallas muy pequeñas (ej. <= 480px) */
+@media (max-width: 480px) {
+  .custom-title {
+    font-size: 26px;
+  }
+  
+  .custom-subtitle {
+    font-size: 20px;
+  }
+  
+  .custom-text {
+    font-size: 14px;
+  }
+}
+/* Mantén tu CSS tal cual arriba,
+   y añade estas reglas al final. */
+
+/* Pantallas medianas (por ejemplo, <= 768px) */
+@media (max-width: 768px) {
+  /* Ajusta el contenedor para que no quede tan estrecho */
+  .overlay-container {
+    width: 90%;
+    padding: 20px;
+  }
+
+  /* Si quieres reducir un poco la fuente del botón */
+  .custom-btn {
+    font-size: 14px;     /* Más pequeño en móvil */
+    padding: 8px 14px;   /* Ajusta el padding */
+    white-space: nowrap; /* Evita salto de línea */
+  }
+}
+
+/* Pantallas muy pequeñas (por ejemplo, <= 480px) */
+@media (max-width: 480px) {
+  /* Aún más pequeño si hace falta */
+  .custom-btn {
+    font-size: 13px;
+    padding: 6px 12px;
+    white-space: nowrap;
+  }
+}
+/* Ajustes mínimos para evitar que el logo se corte en pantallas pequeñas */
+@media (max-width: 768px) {
+  /* Haz que el contenedor no esté absolutamente posicionado */
+  .overlay-container {
+    position: static;            /* Quita position: absolute */
+    transform: none;            /* Quita translate(-50%, -50%) */
+    top: auto;
+    left: auto;
+    margin: 20px auto;          /* Centra con margen automático */
+    width: 90%;                 /* Ocupa el 90% del ancho de la pantalla */
+    max-width: 600px;           /* Opcional, para no crecer demasiado */
+    padding: 20px;              /* Ajusta el padding si quieres menos espacio */
+  }
+
+  /* Haz que la imagen se ajuste automáticamente al ancho del contenedor */
+  .overlay-container img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto; /* Centra la imagen horizontalmente */
+  }
+
+  /* Ajusta títulos y textos para que no se corten */
+  .custom-title {
+    font-size: 36px; /* Baja un poco el tamaño en móvil */
+  }
+  .custom-subtitle {
+    font-size: 24px;
+  }
+  .custom-text {
+    font-size: 16px;
+  }
+
+  /* Ajusta el botón si se corta */
+  .custom-btn {
+    font-size: 14px;
+    padding: 8px 16px;
+    white-space: nowrap; /* Evita salto de línea */
+  }
+}
+
+
+

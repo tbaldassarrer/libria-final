@@ -1,0 +1,276 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap");
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  min-height: 100vh;
+  font-family: "Poppins", sans-serif;
+ background-color: rgb(248, 240, 255);
+}
+  .barra_superior {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Distribuye los elementos: logo a la izquierda, menú centrado y barra de búsqueda a la derecha */
+    padding: 10px 20px;
+    background-color: hsl(273, 57%, 75%);
+    border-bottom: 2px solid #ddd;
+    position: relative; /* Necesario para que los elementos dentro de ella se posicionen correctamente */
+  }
+  
+  .img-libria{
+    width: 125px;
+    height: 35px;
+  }
+  
+  .barra_superior nav {
+    display: flex;
+    gap: 15px;
+    justify-content: center; /* Centra los elementos del menú */
+    padding-left: 80px;
+  }
+  
+  .barra_superior nav ul {
+    display: flex;
+    gap: 15px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+  
+  .barra_superior nav ul li a {
+    color: #ffffff;
+    font-weight: bold;
+    text-decoration: none;
+   padding-left: 30px;
+  }
+  
+  
+  
+  .search-bar {
+    display: flex;
+    align-items: center;
+    background: white;
+    padding: 5px;
+    border-radius: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-left: 20px; /* Espacio entre el menú y la barra de búsqueda */
+    position: relative; /* Necesario para posicionar correctamente el contenedor de la lista */
+  }
+  
+  .search-bar input {
+    border: none;
+    outline: none;
+    padding: 5px 10px;
+    font-size: 14px;
+    width: 200px; /* Ajusta el ancho de la barra de búsqueda */
+  }
+  
+  .search-bar button {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 5px;
+    font-size: 16px;
+    color: #666;
+  }
+  
+  .search-bar button:hover {
+    color: #ffffff;
+  }
+  /* Barra de búsqueda */
+  .search-bar {
+    position: relative;
+  }
+  /* Estilos para la lista desplegable de libros */
+#bookList {
+  position: absolute;
+  top: 100%; /* Coloca la lista justo debajo del input */
+  left: 0;
+  width: 100%; /* Asegura que la lista tenga el mismo ancho que el input */
+  max-height: 200px; /* Limita la altura del desplegable */
+  overflow-y: auto; /* Hace scroll si hay demasiados elementos */
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  z-index: 1000;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#bookList .list-group-item {
+  padding: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+#bookList .list-group-item:last-child {
+  border-bottom: none;
+}
+
+#bookList .list-group-item:hover {
+  background-color: #f8f9fa;
+}
+
+
+
+#bookList {
+  position: absolute;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  list-style: none;
+  padding: 0;
+  margin-top: 5px;
+  display: none;
+}
+
+#bookList .list-group-item {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+#bookList .list-group-item:hover {
+  background-color: #f8f9fa;
+}
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    
+  }
+  h1 {
+    text-align: center;
+    color: #9442c0;
+    margin-bottom: 40px;
+  }
+
+  /* Estilos para el listado de clubs */
+  .clubs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+  }
+  .club-card {
+    background-color: rgb(240, 224, 255); 
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.3s ease;
+  }
+  .club-card:hover {
+    transform: scale(1.02);
+  }
+  .club-card h2 {
+    margin: 0 0 10px;
+    font-size: 20px;
+    color: #4a4a4a;
+
+  }
+  .club-card p {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 20px;
+  }
+  .club-card button {
+    background-color: #9442c0;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  .club-card button:hover {
+    background-color: #652389;
+  }
+  
+ .divisor {
+    width: 100%;
+    height: 1px;
+    background: #d6d6d6;
+    margin: 8px 0;
+  }
+
+
+/*   RESPONSIVE   */
+
+
+/* Para pantallas medianas (<= 992px) */
+@media (max-width: 992px) {
+  .barra_superior {
+    flex-wrap: wrap;  /* Permite que los elementos se acomoden en varias líneas si es necesario */
+    justify-content: center;
+  }
+  .barra_superior nav {
+    padding-left: 0;
+    margin-top: 10px;
+  }
+  .search-bar {
+    margin-left: 0;
+    margin-top: 10px;
+  }
+  .search-bar input {
+    width: 150px;
+  }
+  
+  /* Ajustar el grid de clubs: se mantiene auto-fit pero se reduce el tamaño mínimo */
+  .clubs {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+/* Para pantallas pequeñas (<= 768px) */
+@media (max-width: 768px) {
+  .barra_superior {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .barra_superior nav ul {
+    flex-direction: row;
+    gap: 10px;
+    justify-content: center;
+  }
+  .search-bar {
+    margin-left: 0;
+    margin-top: 10px;
+  }
+  .search-bar input {
+    width: 120px;
+  }
+  
+  /* En el grid, se apilan más las tarjetas */
+  .clubs {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Para pantallas muy pequeñas (<= 480px) */
+@media (max-width: 480px) {
+  .search-bar input {
+    width: 100px;
+  }
+  
+  h1 {
+    font-size: 24px;
+  }
+  
+  .club-card h2 {
+    font-size: 18px;
+  }
+  
+  .club-card p {
+    font-size: 14px;
+  }
+}

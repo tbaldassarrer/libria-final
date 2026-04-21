@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Comunidades Libria</title>
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+    />
+    <!-- CSS -->
+    <link rel="stylesheet" href="styles/comunidades.css" />
+
+
+     </head>
+     <body>
+      <div class="barra_superior">
+        <a th:href="@{/home}"><img src="images/libriapeq.png" alt="img Libria" class="img-libria"></a>
+        <nav>
+            <ul>
+                <li></li>
+                <li><a th:href="@{/home}">Home</a></li>
+                <li><a id="btnExplora" th:href="@{/explora}">Explora</a></li>
+                <li><a id="btnComunidades" th:href="@{/comunidades}">Comunidades</a></li>  
+                <li><a th:href="@{/contacto}">Contacto</a></li>          
+        
+              </ul>
+        </nav>
+        <form class="search-bar" onsubmit="return false;">
+            <input type="text" id="searchBook" placeholder="Buscar un libro..." />
+            <button type="submit" id="searchButton"><i class="fas fa-search"></i></button>
+            <ul id="bookList" class="list-group"></ul>
+        </form>
+      </div>
+        <div class="container">
+          <h1>Comunidades</h1>
+          <div class="clubs">
+            <!-- Club existente: Fantasía -->
+            <div class="club-card">
+              <h2>🐉 Fantasía 🐉</h2>
+              <div class="divisor"></div>
+              <p>Únete a un mundo mágico lleno de aventuras y criaturas fantásticas.</p>
+              <button>Solicitar unirme</button>
+            </div>
+            <!-- Club existente: Romance -->
+            <div class="club-card">
+              <h2>💘 Romance 💘</h2>
+              <div class="divisor"></div>
+              <p>Comparte historias de amor sano y pasión en cada página.</p>
+              <button>Solicitar unirme</button>
+            </div>
+            <!-- Club existente: Thriller -->
+            <div class="club-card">
+              <h2>🕵️‍♂️ Thriller 🕵️‍♂️</h2>
+              <div class="divisor"></div>
+              <p>Sumérgete en tramas llenas de suspense, intriga y misterio.</p>
+              <button>Solicitar unirme</button>
+            </div>
+            <!-- Club existente: Dark Romance -->
+            <div class="club-card">
+              <h2>🖤 Dark Romance 🖤</h2>
+              <div class="divisor"></div>
+              <p>Explora relaciones intensas y misteriosas en un ambiente oscuro y seductor.</p>
+              <button>Solicitar unirme</button>
+            </div>
+            <!-- Club existente: Romantasy -->
+            <div class="club-card">
+              <h2>💖 Romantasy 💖</h2>
+              <div class="divisor"></div>
+              <p>Donde el romance se fusiona con la fantasía para crear historias únicas.</p>
+              <button>Solicitar unirme</button>
+            </div>
+            <!-- Club existente: Terror -->
+            <div class="club-card">
+              <h2>👻 Terror 👻</h2>
+              <div class="divisor"></div>
+              <p>Vive emociones intensas y relatos escalofriantes que te pondrán los pelos de punta.</p>
+              <button>Solicitar unirme</button>
+            </div>
+            <!-- Club existente: Autoayuda -->
+            <div class="club-card">
+              <h2>🌟 Autoayuda 🌟</h2>
+              <div class="divisor"></div>
+              <p>Aprende técnicas y consejos para mejorar tu vida personal y profesional.</p>
+              <button>Solicitar unirme</button>
+            </div>
+            <!-- Club existente: Poesía -->
+            <div class="club-card">
+              <h2>🌹 Poesía 🌹</h2>
+              <div class="divisor"></div>
+              <p>Sumérgete en versos y rimas que despiertan emociones profundas y reflexiones.</p>
+              <button>Solicitar unirme</button>
+            </div>
+            
+            <!-- Nuevas Comunidades (clubs de lectura) -->
+            <!-- Club 9: Café y Letras -->
+            <div class="club-card">
+              <h2>☕ Café y Letras ☕</h2>
+              <div class="divisor"></div>
+              <p>Comparte tus lecturas favoritas y debates literarios mientras disfrutas de un buen café.</p>
+              <button>Solicitar unirme</button>
+            </div>
+            <!-- Club 10: Conexión Lectores -->
+            <div class="club-card">
+              <h2>🔗 ConnectBooks 🔗</h2>
+              <div class="divisor"></div>
+              <p>Únete para conectar con otros apasionados de la lectura y compartir recomendaciones.</p>
+              <button>Solicitar unirme</button>
+            </div>
+            <!-- Club 11: Café, Letras y Plática -->
+            <div class="club-card">
+              <h2>📚 Free-Spoilers 📚</h2>
+              <div class="divisor"></div>
+              <p>Un espacio para charlar sobre libros y disfrutar de encuentros literarios sin spoilers.</p>
+              <button>Solicitar unirme</button>
+            </div>
+            <!-- Club 12: Rincón de Lectores -->
+            <div class="club-card">
+              <h2>📖 Tú rincón 📖</h2>
+              <div class="divisor"></div>
+              <p>Descubre un rincón especial para debatir, descubrir y disfrutar nuevas lecturas junto a otros lectores.</p>
+              <button>Solicitar unirme</button>
+            </div>
+          </div>
+          
+        </div>
+      </body>
+
+    </html>
