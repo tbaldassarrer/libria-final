@@ -351,17 +351,25 @@ public Map<String, Object> startReading(@RequestParam("title") String title, Pri
              }
 
         // 3) Cerrar cualquier libro "En progreso"
-        String closeCurrent = "UPDATE registrolectura SET estadoLectura = 'Completado', fechaFin = NOW() "
-                            + "WHERE estadoLectura = 'En progreso' AND idUsuario = ?";
-        try (PreparedStatement psUpdate = connection.prepareStatement(closeCurrent)) {
-            psUpdate.setInt(1, idUsuario);
-            psUpdate.executeUpdate();
+        String checkInProgressQuery = "SELECT DATE_FORMAT(fechaInicio, '%Y-%m-%d') FROM registrolectura WHERE idUsuario = ? AND idLibro = ? AND estadoLectura = 'En progreso'";
+        try (PreparedStatement psInProgressCheck = connection.prepareStatement(checkInProgressQuery)) {
+            psInProgressCheck.setInt(1, idUsuario);
+            psInProgressCheck.setInt(2, idLibro);
+            try (ResultSet rsInProgress = psInProgressCheck.executeQuery()) {
+                if (rsInProgress.next()) {
+                    response.put("success", true);
+                    response.put("reading", title + " - " + author);
+                    response.put("idLibro", idLibro);
+                    response.put("fechaInicio", rsInProgress.getString(1));
+                    return response;
+                }
+            }
         }
 
         // 4) Revisar si el libro ya está en "Próximas Lecturas" y pasarlo a "En progreso"
         String updateToInProgress = 
             "UPDATE registrolectura SET estadoLectura = 'En progreso', fechaInicio = NOW() "
-          + "WHERE idUsuario = ? AND idLibro = ?";
+          + "WHERE idUsuario = ? AND idLibro = ? AND estadoLectura = 'Próximas Lecturas'";
         try (PreparedStatement psInProgress = connection.prepareStatement(updateToInProgress)) {
             psInProgress.setInt(1, idUsuario);
             psInProgress.setInt(2, idLibro);
@@ -459,10 +467,12 @@ public Map<String, Object> checkIfBookExists(@RequestParam("title") String title
     
     @GetMapping("/getCurrentReading")
     @ResponseBody
-    public Map<String, String> getCurrentReading(Principal principal) {
-        Map<String, String> response = new HashMap<>();
+    public Map<String, Object> getCurrentReading(Principal principal) {
+        Map<String, Object> response = new HashMap<>();
+        List<Map<String, String>> readings = new ArrayList<>();
     
         if (principal == null) {
+            response.put("books", readings);
             response.put("reading", "");
             return response;
         }
@@ -486,6 +496,7 @@ public Map<String, Object> checkIfBookExists(@RequestParam("title") String title
             }
     
             if (idUsuario == -1) {
+                response.put("books", readings);
                 response.put("reading", "");
                 return response;
             }
@@ -495,23 +506,30 @@ public Map<String, Object> checkIfBookExists(@RequestParam("title") String title
         psSetLang.execute();
     }            // Obtener el libro que el usuario tiene en estado "En progreso"
             String sql = "SELECT l.idLibro, l.titulo, l.autor, l.cover_image, " +
-             "COALESCE(DATE_FORMAT(rl.fechaInicio, '%W, %d de %M de %Y'), '') AS fechaInicio " +
+             "COALESCE(DATE_FORMAT(rl.fechaInicio, '%Y-%m-%d'), '') AS fechaInicio " +
              "FROM registrolectura rl " +
              "JOIN libros l ON rl.idLibro = l.idLibro " +
              "WHERE rl.estadoLectura = 'En progreso' AND rl.idUsuario = ? " +
-             "ORDER BY rl.fechaInicio DESC LIMIT 1";
+             "ORDER BY rl.fechaInicio DESC";
 
             try (PreparedStatement ps = connection.prepareStatement(sql)) {
                 ps.setInt(1, idUsuario);
                 try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                        response.put("idLibro", String.valueOf(rs.getInt("idLibro")));
-                        response.put("titulo", rs.getString("titulo"));
-                        response.put("autor", rs.getString("autor"));
-                        response.put("cover_image", rs.getString("cover_image"));
+                    while (rs.next()) {
+                        Map<String, String> book = new HashMap<>();
+                        book.put("idLibro", String.valueOf(rs.getInt("idLibro")));
+                        book.put("titulo", rs.getString("titulo"));
+                        book.put("autor", rs.getString("autor"));
+                        book.put("cover_image", rs.getString("cover_image"));
                         
                         String fechaInicio = rs.getString("fechaInicio");
-                        response.put("fechaInicio", fechaInicio != null ? fechaInicio.trim() : ""); 
+                        book.put("fechaInicio", fechaInicio != null ? fechaInicio.trim() : "");
+                        readings.add(book);
+                    }
+
+                    response.put("books", readings);
+                    if (!readings.isEmpty()) {
+                        response.putAll(readings.get(0));
                     } else {
                         response.put("reading", "");
                     }
@@ -520,6 +538,7 @@ public Map<String, Object> checkIfBookExists(@RequestParam("title") String title
             }
         } catch (SQLException e) {
             System.out.println("❌ Error al obtener el estado de lectura: " + e.getMessage());
+            response.put("books", readings);
             response.put("reading", "");
         }
     

@@ -474,6 +474,127 @@ function formHeaders() {
     return headers;
 }
 
+document.addEventListener("click", function (event) {
+    const finishButton = event.target.closest(".finish-reading-btn");
+    if (!finishButton) return;
+
+    const modal = document.getElementById("finishReadingModal");
+    const overlay = document.getElementById("overlayModal");
+
+    if (modal) {
+        delete modal.dataset.bookTitle;
+        modal.dataset.bookId = finishButton.dataset.bookId || "";
+        modal.style.display = "block";
+    }
+
+    if (overlay) overlay.style.display = "block";
+});
+
+function submitReview() {
+    const modal = document.getElementById("finishReadingModal");
+    const review = document.getElementById("reviewText").value.trim();
+    const bookId = modal?.dataset.bookId || "";
+    const bookTitle = modal?.dataset.bookTitle || "";
+    const rating = selectedRating;
+
+    if (!review || rating === 0) {
+        Swal.fire({
+            title: "Atencion",
+            text: "Por favor, escribe una resena y selecciona una puntuacion.",
+            icon: "warning",
+            confirmButtonText: "OK",
+            customClass: {
+                popup: "malva-popup",
+                confirmButton: "malva-confirm-button"
+            }
+        });
+        return;
+    }
+
+    let requestBody = "";
+    let endpoint = "";
+
+    if (bookId) {
+        requestBody = `idLibro=${encodeURIComponent(bookId)}&rating=${rating}&review=${encodeURIComponent(review)}`;
+        endpoint = "/finishReading";
+    } else if (bookTitle) {
+        requestBody = `title=${encodeURIComponent(bookTitle)}&resenia=${encodeURIComponent(review)}&puntuacion=${rating}`;
+        endpoint = "/addToLibraryWithReview";
+    } else {
+        Swal.fire({
+            title: "Error",
+            text: "No se encontro un libro valido para guardar la resena.",
+            icon: "error",
+            confirmButtonText: "OK",
+            customClass: {
+                popup: "malva-popup",
+                confirmButton: "malva-confirm-button"
+            }
+        });
+        return;
+    }
+
+    fetch(endpoint, {
+        method: "POST",
+        headers: formHeaders(),
+        body: requestBody
+    })
+    .then(readJsonResponse)
+    .then(data => {
+        if (data.success) {
+            closeFinishReadingModal();
+            if (typeof loadLibrary === "function") loadLibrary();
+            if (typeof loadReviews === "function") loadReviews();
+            if (typeof loadCurrentReading === "function") loadCurrentReading();
+            if (typeof loadUpcomingReads === "function") loadUpcomingReads();
+            if (rating === 5 && typeof loadFavorites === "function") loadFavorites();
+            if (typeof updateProgressBar === "function") updateProgressBar();
+            return;
+        }
+
+        Swal.fire({
+            title: "Error",
+            text: data.message || "No se pudo guardar la resena.",
+            icon: "error",
+            confirmButtonText: "OK",
+            customClass: {
+                popup: "malva-popup",
+                confirmButton: "malva-confirm-button"
+            }
+        });
+    })
+    .catch(error => console.error("Error al guardar la resena:", error));
+}
+
+function loadCurrentReading() {
+    fetch("/getCurrentReading")
+    .then(response => response.json())
+    .then(data => {
+        if (typeof renderCurrentReadings === "function") {
+            renderCurrentReadings(data);
+        }
+    })
+    .catch(error => console.error("Error al obtener el estado de lectura:", error));
+}
+
+function closeFinishReadingModal() {
+    const overlay = document.getElementById("overlayModal");
+    const modal = document.getElementById("finishReadingModal");
+
+    if (overlay) overlay.style.display = "none";
+    if (modal) {
+        modal.style.display = "none";
+        delete modal.dataset.bookTitle;
+        delete modal.dataset.bookId;
+    }
+
+    const reviewText = document.getElementById("reviewText");
+    if (reviewText) reviewText.value = "";
+
+    selectedRating = 0;
+    document.querySelectorAll(".stars span").forEach(star => star.classList.remove("selected"));
+}
+
 function readJsonResponse(response) {
     return response.text().then(text => {
         let data = {};

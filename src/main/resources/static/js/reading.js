@@ -23,10 +23,11 @@ function addToLibrary(title) {
         } else {
             closePopup(); 
             // 📌 El libro NO está en la biblioteca, solo mostramos el modal para puntuar y reseñar
-            document.getElementById("finishReadingModal").dataset.bookTitle = title;
-            document.getElementById("finishReading").setAttribute("data-book-id", "");
+            const modal = document.getElementById("finishReadingModal");
+            modal.dataset.bookTitle = title;
+            delete modal.dataset.bookId;
             document.getElementById("overlayModal").style.display = "block";
-            document.getElementById("finishReadingModal").style.display = "flex";
+            modal.style.display = "flex";
 
             // ✅ Limpiar la reseña anterior y las estrellas seleccionadas
             document.getElementById("reviewText").value = "";
@@ -451,4 +452,117 @@ function readJsonResponse(response) {
 
         return data;
     });
+}
+
+function formatReadingStartDate(fechaInicio) {
+    if (!fechaInicio || fechaInicio.trim() === "" || fechaInicio === "undefined") {
+        return "No disponible";
+    }
+
+    const fecha = new Date(`${fechaInicio}T00:00:00`);
+    if (isNaN(fecha.getTime())) {
+        return "Fecha invalida";
+    }
+
+    return fecha.toLocaleDateString("es-ES", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+    });
+}
+
+function renderCurrentReadings(data) {
+    const readingContainer = document.querySelector(".reading-container");
+    const list = document.getElementById("currentReadingsList");
+
+    if (!readingContainer || !list) return;
+
+    const books = Array.isArray(data?.books)
+        ? data.books
+        : (data?.idLibro ? [data] : []);
+
+    if (books.length === 0) {
+        readingContainer.style.display = "none";
+        list.innerHTML = '<p class="empty-current-reading">No tienes lecturas en progreso.</p>';
+        return;
+    }
+
+    readingContainer.style.display = "flex";
+    list.innerHTML = "";
+
+    books.forEach(book => {
+        const card = document.createElement("article");
+        card.className = "current-reading-card";
+
+        const cover = document.createElement("img");
+        cover.className = "book-cover2";
+        cover.src = book.cover_image || "/images/LIBRiA.png";
+        cover.alt = book.titulo || "Portada del libro";
+
+        const info = document.createElement("div");
+        info.className = "book-info2";
+
+        const title = document.createElement("a");
+        title.className = "current-reading-title";
+        title.textContent = `${book.titulo || "Sin titulo"}${book.autor ? " - " + book.autor : ""}`;
+        title.dataset.bookId = book.idLibro || "";
+
+        const date = document.createElement("p");
+        date.className = "reading-start-date";
+        date.textContent = `Fecha de inicio: ${formatReadingStartDate(book.fechaInicio)}`;
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "btn-finish finish-reading-btn";
+        button.textContent = "Finalizar lectura";
+        button.dataset.bookId = book.idLibro || "";
+
+        info.append(title, date, button);
+        card.append(cover, info);
+        list.appendChild(card);
+    });
+}
+
+function startReading() {
+    const bookTitle = document.getElementById("bookTitle")?.textContent?.trim();
+    if (bookTitle) {
+        startReadingByTitle(bookTitle);
+    }
+}
+
+function startReadingByTitle(bookTitle) {
+    fetch("/startReading?title=" + encodeURIComponent(bookTitle), {
+        method: "POST",
+        headers: formHeaders()
+    })
+    .then(readJsonResponse)
+    .then(data => {
+        if (data.success) {
+            loadCurrentReading();
+            if (typeof closePopup === "function") closePopup();
+
+            const searchBook = document.getElementById("searchBook");
+            if (searchBook) searchBook.value = "";
+        } else {
+            Swal.fire({
+                title: "Aviso",
+                text: data.message || "No se pudo comenzar esta lectura",
+                icon: "warning",
+                confirmButtonText: "OK",
+                customClass: {
+                    popup: "malva-popup",
+                    confirmButton: "malva-confirm-button"
+                }
+            });
+        }
+    })
+    .catch(error => console.error("Error al comenzar a leer:", error));
+}
+
+function loadCurrentReading() {
+    fetch("/getCurrentReading")
+    .then(response => response.json())
+    .then(renderCurrentReadings)
+    .catch(error => console.error("Error al obtener el estado de lectura:", error));
 }
