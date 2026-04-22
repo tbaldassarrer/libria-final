@@ -38,8 +38,8 @@ public class FavoriteController {
             String sql = "SELECT l.titulo, l.cover_image " +
                          "FROM registrolectura rl " +
                          "JOIN libros l ON rl.idLibro = l.idLibro " +
-                         "JOIN usuariolector u ON rl.idUsuario = u.idUsuario " +
-                         "WHERE u.nombreUsuario = ? AND rl.puntuacion = 5";
+                         "JOIN usuariolector u ON rl.idUsuario = u.id_usuario " +
+                         "WHERE u.nombre_usuario = ? AND rl.puntuacion = 5";
             
             try (PreparedStatement ps = connection.prepareStatement(sql)) {
                 ps.setString(1, username);

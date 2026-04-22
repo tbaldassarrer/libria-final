@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,9 +18,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import es.prw.dao.MySqlConnection;
+import es.prw.services.GoogleBooksService;
 
 @Controller
 public class ReadingController {
+    @Autowired
+    private GoogleBooksService googleBooksService;
+
     @PostMapping("/addToLibraryWithReview")
     @ResponseBody
     public Map<String, Object> addToLibraryWithReview(
@@ -40,13 +45,14 @@ public class ReadingController {
         System.out.println("📌 Título recibido en backend: " + title);
     
         String username = principal.getName();
-    
+        googleBooksService.findOrCreateByTitle(title);
+
         try (MySqlConnection db = new MySqlConnection()) {
             db.open();
             Connection connection = db.connection;
     
             // Buscar el ID del libro por el título
-            String sql = "SELECT idLibro, cover_image FROM libros WHERE titulo = ?";
+            String sql = "SELECT idLibro, cover_image FROM libros WHERE LOWER(titulo) = LOWER(?)";
             try (PreparedStatement ps = connection.prepareStatement(sql)) {
                 ps.setString(1, title);
                 try (ResultSet rs = ps.executeQuery()) {
@@ -55,13 +61,13 @@ public class ReadingController {
                         String coverImage = rs.getString("cover_image");
     
                         // Buscar ID del usuario
-                        String userQuery = "SELECT idUsuario FROM usuariolector WHERE nombreUsuario = ?";
+                        String userQuery = "SELECT id_usuario FROM usuariolector WHERE nombre_usuario = ?";
                         int idUsuario = -1;
                         try (PreparedStatement psUser = connection.prepareStatement(userQuery)) {
                             psUser.setString(1, username);
                             try (ResultSet rsUser = psUser.executeQuery()) {
                                 if (rsUser.next()) {
-                                    idUsuario = rsUser.getInt("idUsuario");
+                                    idUsuario = rsUser.getInt("id_usuario");
                                 }
                             }
                         }
@@ -73,7 +79,7 @@ public class ReadingController {
                         }
     
                         // Verificar si el libro ya está en la biblioteca del usuario
-                        String checkQuery = "SELECT * FROM registrolectura WHERE idUsuario = ? AND idLibro = ?";
+                        String checkQuery = "SELECT estadoLectura FROM registrolectura WHERE idUsuario = ? AND idLibro = ? AND estadoLectura = 'Completado'";
                         try (PreparedStatement psCheck = connection.prepareStatement(checkQuery)) {
                             psCheck.setInt(1, idUsuario);
                             psCheck.setInt(2, idLibro);
@@ -130,8 +136,8 @@ public class ReadingController {
 
             String sql = "SELECT l.titulo, l.cover_image, rl.fechaInicio FROM registrolectura rl " +
                          "JOIN libros l ON rl.idLibro = l.idLibro " +
-                         "JOIN usuariolector u ON rl.idUsuario = u.idUsuario " +
-                         "WHERE u.nombreUsuario = ? AND rl.estadoLectura = 'Completado' " +
+                         "JOIN usuariolector u ON rl.idUsuario = u.id_usuario " +
+                         "WHERE u.nombre_usuario = ? AND rl.estadoLectura = 'Completado' " +
                          "ORDER BY rl.fechaFin ASC";
 
             try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -165,12 +171,13 @@ public class ReadingController {
         }
 
         String username = principal.getName();
+        googleBooksService.findOrCreateByTitle(title);
 
         try (MySqlConnection db = new MySqlConnection()) {
             db.open();
             Connection connection = db.connection;
 
-            String sql = "SELECT idLibro, cover_image FROM libros WHERE titulo = ?";
+            String sql = "SELECT idLibro, cover_image FROM libros WHERE LOWER(titulo) = LOWER(?)";
             try (PreparedStatement ps = connection.prepareStatement(sql)) {
                 ps.setString(1, title);
                 try (ResultSet rs = ps.executeQuery()) {
@@ -179,13 +186,13 @@ public class ReadingController {
                         String coverImage = rs.getString("cover_image");
 
                         // Obtener idUsuario
-                        String userQuery = "SELECT idUsuario FROM usuariolector WHERE nombreUsuario = ?";
+                        String userQuery = "SELECT id_usuario FROM usuariolector WHERE nombre_usuario = ?";
                         int idUsuario = -1;
                         try (PreparedStatement psUser = connection.prepareStatement(userQuery)) {
                             psUser.setString(1, username);
                             try (ResultSet rsUser = psUser.executeQuery()) {
                                 if (rsUser.next()) {
-                                    idUsuario = rsUser.getInt("idUsuario");
+                                    idUsuario = rsUser.getInt("id_usuario");
                                 }
                             }
                         }
@@ -196,7 +203,7 @@ public class ReadingController {
                         }
 
                         // Verificar si el libro ya está marcado como "Completado" (ya leído)
-                        String checkQuery = "SELECT * FROM registrolectura WHERE idUsuario = ? AND idLibro = ? AND estadoLectura = 'Completas Lecturas'";
+                        String checkQuery = "SELECT * FROM registrolectura WHERE idUsuario = ? AND idLibro = ? AND estadoLectura = 'Completado'";
                         // Nota: Revisa la lógica de estado: ¿debería ser 'Próximas Lecturas' o 'Completado'?
                         try (PreparedStatement psCheck = connection.prepareStatement(checkQuery)) {
                             psCheck.setInt(1, idUsuario);
@@ -229,6 +236,11 @@ public class ReadingController {
             response.put("message", "Error al agregar el libro a Próximas Lecturas: " + e.getMessage());
         }
 
+        if (!response.containsKey("success")) {
+            response.put("success", false);
+            response.put("message", "Libro no encontrado en la base de datos ni en Google Books.");
+        }
+
         return response;
     }
 
@@ -249,8 +261,8 @@ public class ReadingController {
 
             String sql = "SELECT l.titulo, l.cover_image FROM registrolectura rl " +
                          "JOIN libros l ON rl.idLibro = l.idLibro " +
-                         "JOIN usuariolector u ON rl.idUsuario = u.idUsuario " +
-                         "WHERE u.nombreUsuario = ? AND rl.estadoLectura = 'Próximas Lecturas'";
+                         "JOIN usuariolector u ON rl.idUsuario = u.id_usuario " +
+                         "WHERE u.nombre_usuario = ? AND rl.estadoLectura = 'Próximas Lecturas'";
             try (PreparedStatement ps = connection.prepareStatement(sql)) {
                 ps.setString(1, username);
                 try (ResultSet rs = ps.executeQuery()) {
@@ -281,6 +293,7 @@ public Map<String, Object> startReading(@RequestParam("title") String title, Pri
     }
 
     String username = principal.getName();
+    googleBooksService.findOrCreateByTitle(title);
     int idUsuario = -1;
     int idLibro = -1;
     String author = "";
@@ -291,12 +304,12 @@ public Map<String, Object> startReading(@RequestParam("title") String title, Pri
         Connection connection = db.connection;
 
         // 1) Obtener idUsuario
-        String userQuery = "SELECT idUsuario FROM usuariolector WHERE nombreUsuario = ?";
+        String userQuery = "SELECT id_usuario FROM usuariolector WHERE nombre_usuario = ?";
         try (PreparedStatement psUser = connection.prepareStatement(userQuery)) {
             psUser.setString(1, username);
             try (ResultSet rsUser = psUser.executeQuery()) {
                 if (rsUser.next()) {
-                    idUsuario = rsUser.getInt("idUsuario");
+                    idUsuario = rsUser.getInt("id_usuario");
                 }
             }
         }
@@ -307,7 +320,7 @@ public Map<String, Object> startReading(@RequestParam("title") String title, Pri
         }
 
         // 2) Obtener idLibro y autor
-        String bookQuery = "SELECT idLibro, autor FROM libros WHERE titulo = ?";
+        String bookQuery = "SELECT idLibro, autor FROM libros WHERE LOWER(titulo) = LOWER(?)";
         try (PreparedStatement psBook = connection.prepareStatement(bookQuery)) {
             psBook.setString(1, title);
             try (ResultSet rsBook = psBook.executeQuery()) {
@@ -424,8 +437,8 @@ public Map<String, Object> checkIfBookExists(@RequestParam("title") String title
 
         String sql = "SELECT rl.idLibro FROM registrolectura rl " +
                      "JOIN libros l ON rl.idLibro = l.idLibro " +
-                     "JOIN usuariolector u ON rl.idUsuario = u.idUsuario " +
-                     "WHERE u.nombreUsuario = ? AND l.titulo = ? AND rl.estadoLectura = 'Completado'";
+                     "JOIN usuariolector u ON rl.idUsuario = u.id_usuario " +
+                     "WHERE u.nombre_usuario = ? AND l.titulo = ? AND rl.estadoLectura = 'Completado'";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, username);
@@ -461,13 +474,13 @@ public Map<String, Object> checkIfBookExists(@RequestParam("title") String title
             Connection connection = db.connection;
     
             // Obtener ID del usuario autenticado
-            String userQuery = "SELECT idUsuario FROM usuariolector WHERE nombreUsuario = ?";
+            String userQuery = "SELECT id_usuario FROM usuariolector WHERE nombre_usuario = ?";
             int idUsuario = -1;
             try (PreparedStatement psUser = connection.prepareStatement(userQuery)) {
                 psUser.setString(1, username);
                 try (ResultSet rsUser = psUser.executeQuery()) {
                     if (rsUser.next()) {
-                        idUsuario = rsUser.getInt("idUsuario");
+                        idUsuario = rsUser.getInt("id_usuario");
                     }
                 }
             }
@@ -537,13 +550,13 @@ public Map<String, Object> checkIfBookExists(@RequestParam("title") String title
             db.open();
             Connection connection = db.connection;
             // Obtener ID del usuario
-            String userQuery = "SELECT idUsuario FROM usuariolector WHERE nombreUsuario = ?";
+            String userQuery = "SELECT id_usuario FROM usuariolector WHERE nombre_usuario = ?";
             int idUsuario = -1;
             try (PreparedStatement psUser = connection.prepareStatement(userQuery)) {
                 psUser.setString(1, username);
                 try (ResultSet rsUser = psUser.executeQuery()) {
                     if (rsUser.next()) {
-                        idUsuario = rsUser.getInt("idUsuario");
+                        idUsuario = rsUser.getInt("id_usuario");
                     }
                 }
             }
@@ -595,13 +608,13 @@ public Map<String, Object> checkIfBookExists(@RequestParam("title") String title
             Connection connection = db.connection;
     
             // Obtener ID del usuario
-            String userQuery = "SELECT idUsuario FROM usuariolector WHERE nombreUsuario = ?";
+            String userQuery = "SELECT id_usuario FROM usuariolector WHERE nombre_usuario = ?";
             int idUsuario = -1;
             try (PreparedStatement psUser = connection.prepareStatement(userQuery)) {
                 psUser.setString(1, username);
                 try (ResultSet rsUser = psUser.executeQuery()) {
                     if (rsUser.next()) {
-                        idUsuario = rsUser.getInt("idUsuario");
+                        idUsuario = rsUser.getInt("id_usuario");
                     }
                 }
             }

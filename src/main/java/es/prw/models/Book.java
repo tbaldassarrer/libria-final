@@ -1,6 +1,11 @@
 package es.prw.models;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "libros")
@@ -8,6 +13,7 @@ public class Book {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "idLibro")
     private int idLibro;
 
     @Column(name = "titulo", nullable = false)
@@ -20,9 +26,9 @@ public class Book {
     private String genero;
 
     @Column(name = "anioEdicion")
-    private String anioEdicion;
+    private Integer anioEdicion;
 
-    @Column(name = "sinopsis")
+    @Column(name = "sinopsis", length = 2000)
     private String sinopsis;
 
     @Column(name = "puntuacion")
@@ -39,7 +45,7 @@ public class Book {
         this.titulo = titulo;
         this.autor = autor;
         this.genero = genero;
-        this.anioEdicion = anioEdicion;
+        this.anioEdicion = parseAnioEdicion(anioEdicion);
         this.sinopsis = sinopsis;
         this.puntuacion = puntuacion;
         this.coverImage = coverImage;
@@ -79,11 +85,23 @@ public class Book {
     }
 
     public String getAnioEdicion() {
-        return anioEdicion;
+        return anioEdicion != null ? anioEdicion.toString() : "";
     }
 
     public void setAnioEdicion(String anioEdicion) {
-        this.anioEdicion = anioEdicion;
+        this.anioEdicion = parseAnioEdicion(anioEdicion);
+    }
+
+    private Integer parseAnioEdicion(String anioEdicion) {
+        if (anioEdicion == null || anioEdicion.isBlank()) {
+            return null;
+        }
+
+        try {
+            return Integer.valueOf(anioEdicion.trim().substring(0, Math.min(4, anioEdicion.trim().length())));
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     public String getSinopsis() {

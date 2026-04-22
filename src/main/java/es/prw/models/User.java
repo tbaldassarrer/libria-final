@@ -1,16 +1,22 @@
 package es.prw.models;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "usuariolector")  // Nombre de la tabla en la BD
+@Table(name = "usuariolector")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_usuario")
     private int idUsuario;
 
-    @Column(name = "nombreUsuario", unique = true, nullable = false)
+    @Column(name = "nombre_usuario", unique = true, nullable = false)
     private String nombreUsuario;
 
     @Column(name = "email", unique = true, nullable = false)

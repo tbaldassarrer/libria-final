@@ -4,73 +4,126 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Libria - Explora</title>
-    <link rel="stylesheet" href="styles/explora.css" />
+  <link rel="stylesheet" href="styles/explora.css" />
 </head>
 <body>
 
   <div class="barra_superior">
     <a th:href="@{/home}"><img src="images/libriapeq.png" alt="img Libria" class="img-libria"></a>
     <nav>
-        <ul>
-            <li></li>
-            <li><a th:href="@{/home}">Home</a></li>
-            <li><a id="btnExplora" th:href="@{/explora}">Explora</a></li>
-            <li><a id="btnComunidades" th:href="@{/comunidades}">Comunidades</a></li>    
-            <li><a th:href="@{/contacto}">Contacto</a></li>          
-      
-          </ul>
+      <ul>
+        <li><a th:href="@{/home}">Home</a></li>
+        <li><a id="btnExplora" th:href="@{/explora}">Explora</a></li>
+        <li><a id="btnComunidades" th:href="@{/comunidades}">Comunidades</a></li>
+        <li><a th:href="@{/contacto}">Contacto</a></li>
+      </ul>
     </nav>
     <form class="search-bar" onsubmit="return false;">
-        <input type="text" id="searchBook" placeholder="Buscar un libro..." />
-        <button type="submit" id="searchButton"><i class="fas fa-search"></i></button>
-        <ul id="bookList" class="list-group"></ul>
+      <input type="text" id="searchBook" placeholder="Buscar un libro..." />
+      <button type="submit" id="searchButton"><i class="fas fa-search"></i></button>
+      <ul id="bookList" class="list-group"></ul>
     </form>
   </div>
 
-  <!-- Contenido principal de la página -->
   <main>
-    <!-- Sección de libros dinámicos -->
     <section id="dynamic-books">
-      <h1 class="section-title">📚 Descubre los libros mejor puntuados por género 📚</h1>
+      <h1 class="section-title page-title">
+        <svg class="title-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+          <path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z" />
+          <path d="M8 6h8" />
+        </svg>
+        Descubre los libros mejor puntuados por género
+      </h1>
 
-      <!-- Sección de libros de Fantasía -->
       <div id="fantasy" class="genre-section">
-        <h2 class="section-title">🐉 Fantasía</h2>
+        <h2 class="section-title genre-title">
+          <svg class="title-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m11 3 2.4 5.2L19 10.6l-5.1 2.6L11.4 19 8.8 13.4 3 11l5.5-2.6L11 3z" />
+            <path d="m18 3 .8 1.7L20.5 5.5l-1.7.8L18 8l-.8-1.7-1.7-.8 1.7-.8L18 3z" />
+          </svg>
+          Fantasía
+        </h2>
         <div class="books-container" id="fantasy-books"></div>
       </div>
 
-      <!-- Sección de libros de Romance -->
       <div id="romance" class="genre-section">
-        <h2 class="section-title">💖 Romance</h2>
+        <h2 class="section-title genre-title">
+          <svg class="title-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z" />
+          </svg>
+          Romance
+        </h2>
         <div class="books-container" id="romance-books"></div>
       </div>
-      <!-- Sección de libros de Ciencia Ficción -->
-<div id="science_fiction" class="genre-section">
-  <h2 class="section-title">🚀 Ciencia Ficción</h2>
-  <div class="books-container" id="science_fiction-books"></div>
-</div>
 
-<!-- Sección de libros de Misterio -->
-<div id="mystery" class="genre-section">
-  <h2 class="section-title">🕵️ Misterio</h2>
-  <div class="books-container" id="mystery-books"></div>
-</div>
+      <div id="science_fiction" class="genre-section">
+        <h2 class="section-title genre-title">
+          <svg class="title-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M3 12c3-5 15-5 18 0" />
+            <path d="M3 12c3 5 15 5 18 0" />
+            <path d="M12 2v2" />
+            <path d="M12 20v2" />
+          </svg>
+          Ciencia Ficción
+        </h2>
+        <div class="books-container" id="science_fiction-books"></div>
+      </div>
 
-<!-- Sección de libros de Historia -->
-<div id="history" class="genre-section">
-  <h2 class="section-title">📜 Historia</h2>
-  <div class="books-container" id="history-books"></div>
-</div>
+      <div id="mystery" class="genre-section">
+        <h2 class="section-title genre-title">
+          <svg class="title-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" />
+            <path d="m16.5 16.5 4.5 4.5" />
+            <path d="M9.5 8.5a2.5 2.5 0 0 1 4 2c0 2-2.5 2.2-2.5 4" />
+            <path d="M11 18h.01" />
+          </svg>
+          Misterio
+        </h2>
+        <div class="books-container" id="mystery-books"></div>
+      </div>
 
+      <div id="history" class="genre-section">
+        <h2 class="section-title genre-title">
+          <svg class="title-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 3h11a2 2 0 0 1 2 2v16H7a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3z" />
+            <path d="M7 3v18" />
+            <path d="M10 8h6" />
+            <path d="M10 12h6" />
+          </svg>
+          Historia
+        </h2>
+        <div class="books-container" id="history-books"></div>
+      </div>
     </section>
   </main>
 
-  <!-- Footer (opcional, si tienes uno) -->
+  <div class="explora-modal-overlay" id="exploraBookModal" aria-hidden="true">
+    <div class="explora-modal" role="dialog" aria-modal="true" aria-labelledby="exploraModalTitle">
+      <button type="button" class="explora-modal-close" id="closeExploraModal" aria-label="Cerrar">&times;</button>
+      <div class="explora-modal-body">
+        <img id="exploraModalCover" class="explora-modal-cover" src="/images/portadaLibro.jpg" alt="">
+        <div class="explora-modal-info">
+          <h2 id="exploraModalTitle"></h2>
+          <p><strong>Autor:</strong> <span id="exploraModalAuthor"></span></p>
+          <p><strong>Género:</strong> <span id="exploraModalGenre"></span></p>
+          <p><strong>Año de Edición:</strong> <span id="exploraModalYear"></span></p>
+          <p><strong>Puntuación:</strong> <span id="exploraModalRating"></span></p>
+        </div>
+      </div>
+      <div class="explora-modal-synopsis">
+        <h3>Sinopsis</h3>
+        <p id="exploraModalDescription"></p>
+      </div>
+    </div>
+  </div>
+
   <footer class="footer">
     <p>© 2024 Libria. Todos los derechos reservados.</p>
   </footer>
 
-  <!-- Enlace al archivo JavaScript -->
+  <script src="/js/book.js"></script>
   <script src="/js/explora.js"></script>
 </body>
 </html>

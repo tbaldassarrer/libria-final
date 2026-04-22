@@ -38,8 +38,8 @@ public class ReviewController {
             String sql = "SELECT l.titulo, rl.resenia, rl.puntuacion " +
                          "FROM registrolectura rl " +
                          "JOIN libros l ON rl.idLibro = l.idLibro " +
-                         "JOIN usuariolector u ON rl.idUsuario = u.idUsuario " +
-                         "WHERE u.nombreUsuario = ? AND rl.resenia IS NOT NULL " +
+                         "JOIN usuariolector u ON rl.idUsuario = u.id_usuario " +
+                         "WHERE u.nombre_usuario = ? AND rl.resenia IS NOT NULL " +
                          "AND rl.estadoLectura = 'Completado'";
             
             try (PreparedStatement ps = connection.prepareStatement(sql)) {

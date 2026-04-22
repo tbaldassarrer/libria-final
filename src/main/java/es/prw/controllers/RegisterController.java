@@ -6,6 +6,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.transaction.annotation.Transactional;
 
 import es.prw.models.User;
 import es.prw.repositories.UserRepository;
@@ -17,6 +18,7 @@ public class RegisterController {
     private UserRepository userRepository;
 
     @PostMapping("/register")
+    @Transactional
     public String registerUser(
             @RequestParam("nombreUsuario") String nombreUsuario,
             @RequestParam("email") String email,
@@ -24,7 +26,7 @@ public class RegisterController {
             @RequestParam("reppassword") String reppassword,
             Model model) {
 
-        System.out.println("⏳ Intentando registrar usuario...");
+        System.out.println("⏳ Intentando registrar usuario: " + nombreUsuario + ", email: " + email);
 
         // Validación de la contraseña
         String passwordPattern = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*?&.])[A-Za-z\\d@$!%*?&.]{6,}$";
@@ -52,13 +54,25 @@ public class RegisterController {
                 return "login";
             }
 
+            // Verificar si el nombre de usuario ya está registrado
+            if (userRepository.findByNombreUsuario(nombreUsuario) != null) {
+                model.addAttribute("registerError", "⚠️ El nombre de usuario ya está registrado.");
+                model.addAttribute("nombreUsuario", nombreUsuario);
+                model.addAttribute("email", email);
+                return "login";
+            }
+
             // Encriptar la contraseña
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
             String hashedPassword = encoder.encode(password);
 
+            System.out.println("🔐 Contraseña encriptada: " + hashedPassword);
+
             // Crear y guardar el usuario
             User user = new User(nombreUsuario, email, hashedPassword);
-            userRepository.save(user);
+            User savedUser = userRepository.save(user);
+
+            System.out.println("✅ Usuario guardado con ID: " + savedUser.getIdUsuario());
 
             model.addAttribute("registerSuccess", "✅ Registro completado correctamente, ¡Bienvenido a LIBRIA!");
             System.out.println("✅ Usuario registrado correctamente.");

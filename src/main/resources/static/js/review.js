@@ -6,6 +6,7 @@ let selectedRating = 0; // Variable para almacenar la puntuación seleccionada
 // Abre el modal al hacer clic en "Finalizar lectura"
 document.addEventListener("click", function (event) {
     if (event.target && event.target.id === "finishReading") {
+        delete document.getElementById("finishReadingModal").dataset.bookTitle;
         document.getElementById("overlayModal").style.display = "block";
         document.getElementById("finishReadingModal").style.display = "block";
     }
@@ -21,6 +22,7 @@ function closeFinishReadingModal() {
 
     // 🔥 Limpiar la reseña y las estrellas seleccionadas
     document.getElementById("reviewText").value = "";
+    delete document.getElementById("finishReadingModal").dataset.bookTitle;
     selectedRating = 0;
     document.querySelectorAll(".stars span").forEach(star => star.classList.remove("selected"));
 }
@@ -66,7 +68,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
 function submitReview() {
     const review = document.getElementById("reviewText").value.trim();
-    const bookId = document.getElementById("finishReading").getAttribute("data-book-id");
+    const finishButton = document.getElementById("finishReading");
+    const bookId = finishButton ? finishButton.getAttribute("data-book-id") : "";
     const bookTitle = document.getElementById("finishReadingModal").dataset.bookTitle; // ✅ Título si viene de "Libros Leídos"
     const rating = selectedRating;
 
@@ -116,10 +119,10 @@ function submitReview() {
 
     fetch(endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        headers: formHeaders(),
         body: requestBody,
     })
-    .then(response => response.json())
+    .then(readJsonResponse)
     .then(data => {
         console.log("📌 Respuesta del backend:", data);
 
@@ -181,9 +184,10 @@ function submitReview() {
               
             
         } else {
+            const message = data.message || "No se pudo guardar la reseña. Revisa si el libro ya existe o si la sesión sigue activa.";
             Swal.fire({
                 title: 'Error',
-                text: '❌ Error al guardar la reseña: ' + data.message,
+                text: 'Error al guardar la reseña: ' + message,
                 icon: 'error',
                 confirmButtonText: 'OK',
                 customClass: {
@@ -230,14 +234,14 @@ function submitReviewAndAddBook(title) {
 
     fetch("/addToLibraryWithReview", {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        headers: formHeaders(),
         body: new URLSearchParams({
             title: title,
             resenia: review,
             puntuacion: rating
         })
     })
-    .then(response => response.json())
+    .then(readJsonResponse)
     .then(data => {
         if (data.success) {
             // Actualizamos la interfaz sin recargar la página
@@ -263,12 +267,13 @@ function submitReviewAndAddBook(title) {
             }
             closeFinishReadingModal();
         } else {
+            const message = data.message || "No se pudo guardar la reseña.";
             // Si el mensaje indica que el libro ya está en la biblioteca
-            if (data.message.includes("El libro ya está en tu biblioteca")) {
+            if (message.includes("El libro ya est")) {
                 closeFinishReadingModal();
                 Swal.fire({
                     title: 'Información',
-                    text: data.message,
+                    text: message,
                     icon: 'info',
                     confirmButtonText: 'OK',
                     customClass: {
@@ -279,7 +284,7 @@ function submitReviewAndAddBook(title) {
             } else {
                 Swal.fire({
                     title: 'Error',
-                    text: '❌ Error al guardar la reseña: ' + data.message,
+                    text: 'Error al guardar la reseña: ' + message,
                     icon: 'error',
                     confirmButtonText: 'OK',
                     customClass: {
@@ -300,10 +305,10 @@ function submitReviewAndAddBook(title) {
 function sendReviewToServer(endpoint, requestBody) {
     fetch(endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        headers: formHeaders(),
         body: requestBody
     })
-    .then(response => response.json())
+    .then(readJsonResponse)
     .then(data => {
         console.log("📌 Respuesta del backend:", data);
 
@@ -329,9 +334,10 @@ function sendReviewToServer(endpoint, requestBody) {
             }
             updateProgressBar();
         } else {
+            const message = data.message || "No se pudo guardar la reseña.";
             Swal.fire({
                 title: 'Error',
-                text: '❌ Error al guardar la reseña: ' + data.message,
+                text: 'Error al guardar la reseña: ' + message,
                 icon: 'error',
                 confirmButtonText: 'OK',
                 customClass: {
@@ -455,3 +461,34 @@ function loadCurrentReading() {
 
 // Asegurar que se ejecuta cuando el DOM está listo
 document.addEventListener("DOMContentLoaded", loadCurrentReading);
+
+function formHeaders() {
+    const headers = { "Content-Type": "application/x-www-form-urlencoded" };
+    const csrfToken = document.querySelector("meta[name='_csrf']")?.getAttribute("content");
+    const csrfHeader = document.querySelector("meta[name='_csrf_header']")?.getAttribute("content");
+
+    if (csrfToken && csrfHeader) {
+        headers[csrfHeader] = csrfToken;
+    }
+
+    return headers;
+}
+
+function readJsonResponse(response) {
+    return response.text().then(text => {
+        let data = {};
+
+        try {
+            data = text ? JSON.parse(text) : {};
+        } catch (error) {
+            data = {};
+        }
+
+        if (!response.ok) {
+            data.success = false;
+            data.message = data.message || `Error HTTP ${response.status}`;
+        }
+
+        return data;
+    });
+}

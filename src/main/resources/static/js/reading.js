@@ -24,6 +24,7 @@ function addToLibrary(title) {
             closePopup(); 
             // 📌 El libro NO está en la biblioteca, solo mostramos el modal para puntuar y reseñar
             document.getElementById("finishReadingModal").dataset.bookTitle = title;
+            document.getElementById("finishReading").setAttribute("data-book-id", "");
             document.getElementById("overlayModal").style.display = "block";
             document.getElementById("finishReadingModal").style.display = "flex";
 
@@ -45,12 +46,10 @@ function addToUpcomingReads(title, coverImage) {
     const searchInput = document.getElementById("searchBook");
     fetch("/addToUpcomingReads", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-        },
+        headers: formHeaders(),
         body: `title=${encodeURIComponent(title)}`,
     })
-    .then(response => response.json())
+    .then(readJsonResponse)
     .then(data => {
         if (data.success) {
             // Agregar el libro visualmente a la sección de Próximas Lecturas
@@ -68,6 +67,7 @@ function addToUpcomingReads(title, coverImage) {
             document.getElementById("bookList").style.display = "none"; // 🔥 Oculta el desplegable
         }
         else {
+            console.warn("No se pudo añadir el libro:", data.message);
             // Si no es exitoso, mostramos el mensaje (por ejemplo, "Libro leído")
             Swal.fire({
                 title: 'Aviso',
@@ -181,10 +181,11 @@ function startReading() {
         .then(() => {
             // Ahora iniciamos el nuevo libro
             return fetch("/startReading?title=" + encodeURIComponent(bookTitle), {
-                method: "POST"
+                method: "POST",
+                headers: formHeaders()
             });
         })
-        .then(response => response.json())
+        .then(readJsonResponse)
         .then(data => {
             if (data.success) {
                 const currentReading = document.getElementById("currentReading");
@@ -248,9 +249,10 @@ function startReading() {
 
 function removeCurrentReadingBook(bookId) {
     return fetch("/removeCurrentReadingBook?idLibro=" + bookId, {
-        method: "POST"
+        method: "POST",
+        headers: formHeaders()
     })
-    .then(response => response.json())
+    .then(readJsonResponse)
     .then(data => {
         if (data.success) {
             console.log("✅ Libro eliminado correctamente:", bookId);
@@ -420,3 +422,33 @@ function updateProgressBar() {
 
 
  
+function formHeaders() {
+    const headers = { "Content-Type": "application/x-www-form-urlencoded" };
+    const csrfToken = document.querySelector("meta[name='_csrf']")?.getAttribute("content");
+    const csrfHeader = document.querySelector("meta[name='_csrf_header']")?.getAttribute("content");
+
+    if (csrfToken && csrfHeader) {
+        headers[csrfHeader] = csrfToken;
+    }
+
+    return headers;
+}
+
+function readJsonResponse(response) {
+    return response.text().then(text => {
+        let data = {};
+
+        try {
+            data = text ? JSON.parse(text) : {};
+        } catch (error) {
+            data = {};
+        }
+
+        if (!response.ok) {
+            data.success = false;
+            data.message = data.message || `Error HTTP ${response.status}`;
+        }
+
+        return data;
+    });
+}

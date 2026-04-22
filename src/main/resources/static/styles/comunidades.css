@@ -141,6 +141,47 @@ body {
   background-color: #f8f9fa;
 }
 
+#bookList {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-height: 260px;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 6px 0;
+  background: #fff;
+  border: 1px solid #e3d5ef;
+  border-radius: 12px;
+  box-shadow: 0 14px 28px rgba(77, 42, 105, 0.2);
+  z-index: 3000;
+}
+
+#bookList .list-group-item {
+  display: block;
+  padding: 10px 16px;
+  color: #1f1a24;
+  font-size: 14px;
+  line-height: 1.35;
+  border-bottom: 1px solid #f1e9f7;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+#bookList .list-group-item:last-child {
+  border-bottom: 0;
+}
+
+#bookList .list-group-item:hover,
+#bookList .list-group-item:focus {
+  background: #efe3f8;
+  color: #6f2dbd;
+  outline: none;
+}
+
   .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -272,5 +313,130 @@ body {
   
   .club-card p {
     font-size: 14px;
+  }
+}
+
+/* Responsive polish */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+@media (max-width: 1200px) {
+  .barra_superior {
+    gap: 16px;
+    padding: 10px 16px;
+  }
+
+  .barra_superior nav {
+    padding-left: 0;
+  }
+
+  .barra_superior nav ul {
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 8px;
+  }
+
+  .barra_superior nav ul li a {
+    padding-left: 0;
+  }
+
+  .search-bar {
+    flex: 0 1 280px;
+    margin-left: 0;
+  }
+
+  .search-bar input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .container {
+    width: min(100%, 1100px);
+  }
+}
+
+@media (max-width: 800px) {
+  .barra_superior {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px;
+  }
+
+  .barra_superior > a {
+    align-self: center;
+  }
+
+  .barra_superior nav ul {
+    justify-content: center;
+    gap: 8px 14px;
+  }
+
+  .barra_superior nav ul li:empty {
+    display: none;
+  }
+
+  .barra_superior nav ul li a {
+    font-size: 14px;
+  }
+
+  .search-bar {
+    width: 100%;
+    flex-basis: auto;
+    margin-top: 0;
+  }
+
+  .container {
+    padding: 16px;
+  }
+
+  h1 {
+    font-size: clamp(26px, 8vw, 36px);
+    margin-bottom: 24px;
+  }
+
+  .clubs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .club-card {
+    padding: 16px;
+  }
+
+  .club-card h2 {
+    font-size: 18px;
+    line-height: 1.25;
+  }
+}
+
+@media (max-width: 560px) {
+  .barra_superior nav ul {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    justify-content: center;
+  }
+
+  .clubs {
+    grid-template-columns: 1fr;
+  }
+
+  .club-card button {
+    width: 100%;
+    min-height: 42px;
+  }
+}
+
+@media (max-width: 380px) {
+  .barra_superior nav ul {
+    grid-template-columns: repeat(2, auto);
   }
 }

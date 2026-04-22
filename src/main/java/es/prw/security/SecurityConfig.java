@@ -13,8 +13,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -26,15 +30,27 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService) {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
     
     @Bean
     @SuppressWarnings("unused")
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http, DaoAuthenticationProvider authenticationProvider) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Deshabilitamos CSRF para permitir peticiones POST como /register
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/styles/**", "/js/**", "/images/**", "/bootstrap/**", "/login", "/register").permitAll() // Ahora se permite acceso a /register
-                        .requestMatchers("/home").authenticated()
+                .authenticationProvider(authenticationProvider)
+                .authorizeHttpRequests(authz -> authz
+                        .requestMatchers("/styles/**", "/js/**", "/images/**", "/bootstrap/**", "/login", "/register", "/").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/login")
@@ -65,38 +81,28 @@ public class SecurityConfig {
                 System.out.println("🔍 Buscando usuario en la base de datos: " + username);
 
                 // Consulta para obtener el usuario y su contraseña
-                String queryUser = "SELECT idUsuario, password FROM usuariolector WHERE nombreUsuario = ?";
+                String queryUser = "SELECT id_usuario, password FROM usuariolector WHERE nombre_usuario = ?";
                 try (PreparedStatement ps = connection.prepareStatement(queryUser)) {
                     ps.setString(1, username);
 
                     try (ResultSet rs = ps.executeQuery()) {
                         if (rs.next()) {
-                            int userId = rs.getInt("idUsuario");
-                            String password = rs.getString("password"); // {noop} indica que la contraseña no está encriptada
+                            String password = rs.getString("password");
 
                             System.out.println("✅ Usuario encontrado en la BD: " + username);
 
-                            // Consulta para obtener los libros leídos por el usuario (esto es opcional)
-                            String queryBooks = "SELECT idLibro, puntuacion FROM registrolectura WHERE idUsuario = ?";
-                            try (PreparedStatement psBooks = connection.prepareStatement(queryBooks)) {
-                                psBooks.setInt(1, userId);
-                                try (ResultSet rsBooks = psBooks.executeQuery()) {
-                                    List<String> books = new ArrayList<>();
-                                    while (rsBooks.next()) {
-                                        String bookInfo = "Libro ID: " + rsBooks.getInt("idLibro") +
-                                                ", Puntuación: " + rsBooks.getInt("puntuacion");
-                                        books.add(bookInfo);
-                                    }
-
-                                    // Asignamos el rol "USER" para evitar errores con roles dinámicos
-                                    return User.builder()
-                                            .username(username)
-                                            .password(password)
-                                            .roles("USER") 
-                                            .build();
-                                }
+                            // Asignamos el rol "USER"
+                            // Si la contraseña comienza con $2a o $2b, es BCrypt
+                            // Si no, agregamos el prefijo {bcrypt}
+                            if (!password.startsWith("$2a") && !password.startsWith("$2b")) {
+                                password = "{bcrypt}" + password;
                             }
 
+                            return User.builder()
+                                    .username(username)
+                                    .password(password)
+                                    .roles("USER")
+                                    .build();
                         } else {
                             System.out.println("⚠️ ERROR: Usuario no encontrado: " + username);
                             throw new UsernameNotFoundException("Usuario no encontrado");

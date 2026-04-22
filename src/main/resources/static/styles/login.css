@@ -113,6 +113,100 @@ margin-top: 20px;
     margin: 10px auto;
     box-shadow: 0px 4px 10px rgba(154, 72, 213, 0.3);
 }
+
+/* Responsive polish */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+}
+
+.overlay-container {
+  max-width: 1180px;
+}
+
+.logo-img,
+.overlay-container img {
+  max-width: 100%;
+  height: auto;
+}
+
+@media (max-width: 992px) {
+  body {
+    background-attachment: scroll;
+  }
+
+  .overlay-container {
+    position: static;
+    transform: none;
+    width: min(94%, 860px);
+    margin: 28px auto;
+    padding: 22px;
+  }
+
+  .bg-glass {
+    padding: 24px;
+  }
+
+  .custom-text {
+    text-align: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .overlay-container {
+    width: calc(100% - 20px);
+    margin: 10px auto;
+    padding: 14px;
+    border-radius: 12px;
+  }
+
+  .overlay-container .container {
+    padding: 14px !important;
+    margin-block: 0 !important;
+  }
+
+  .bg-glass {
+    padding: 18px !important;
+  }
+
+  .card-body {
+    padding: 22px 18px !important;
+  }
+
+  .custom-text {
+    font-size: 15px;
+    line-height: 1.5;
+    margin-top: 14px;
+  }
+
+  .custom-btn,
+  .btn.custom-btn,
+  .btn.btn-primary {
+    width: 100% !important;
+    min-height: 42px;
+    white-space: normal;
+  }
+
+  .modal-dialog {
+    margin: 12px;
+  }
+
+  .modal-body {
+    padding: 18px;
+  }
+}
 .custom-success-message {
   background-color: rgba(154, 72, 213, 0.2);
   color: #5a2d82;
@@ -273,5 +367,104 @@ margin-top: 20px;
   }
 }
 
+
+/* Final responsive overrides */
+body {
+  min-height: 100vh;
+}
+
+.background-image-container {
+  position: fixed;
+  min-height: 100vh;
+}
+
+.overlay-container {
+  position: relative;
+  top: auto;
+  left: auto;
+  transform: none;
+  width: min(80%, 1180px);
+  margin: clamp(18px, 8vh, 78px) auto;
+  padding: clamp(18px, 2vw, 30px);
+}
+
+.overlay-container .container {
+  margin-block: 0 !important;
+}
+
+.text-center .btn.custom-btn.w-50 {
+  width: auto !important;
+  min-width: 180px;
+  white-space: nowrap;
+}
+
+@media (max-width: 992px) {
+  body {
+    background-attachment: scroll;
+  }
+
+  .overlay-container {
+    position: static;
+    transform: none;
+    top: auto;
+    left: auto;
+    width: min(94%, 860px);
+    margin: 28px auto;
+    padding: 22px;
+  }
+
+  .bg-glass {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 576px) {
+  .overlay-container {
+    width: calc(100% - 20px);
+    margin: 10px auto;
+    padding: 14px;
+    border-radius: 12px;
+  }
+
+  .overlay-container .container {
+    padding: 14px !important;
+    margin-block: 0 !important;
+  }
+
+  .bg-glass {
+    padding: 18px !important;
+  }
+
+  .card-body {
+    padding: 22px 18px !important;
+  }
+
+  .custom-text {
+    font-size: 15px;
+    line-height: 1.5;
+    margin-top: 14px;
+  }
+
+  .custom-btn,
+  .btn.custom-btn,
+  .btn.btn-primary {
+    width: 100% !important;
+    min-height: 42px;
+    white-space: normal;
+  }
+
+  .text-center .btn.custom-btn.w-50 {
+    width: 100% !important;
+    min-width: 0;
+  }
+
+  .modal-dialog {
+    margin: 12px;
+  }
+
+  .modal-body {
+    padding: 18px;
+  }
+}
 
 

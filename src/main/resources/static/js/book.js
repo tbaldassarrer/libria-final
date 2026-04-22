@@ -1,4 +1,4 @@
-/* Funcionalidades relacionadas con búsqueda y detalles de libros */
+/* Funcionalidades relacionadas con busqueda y detalles de libros */
 
 document.addEventListener("DOMContentLoaded", function () {
     const overlay = document.querySelector('.overlay');
@@ -6,108 +6,161 @@ document.addEventListener("DOMContentLoaded", function () {
     const bookList = document.getElementById("bookList");
     const searchButton = document.getElementById("searchButton");
     const popupWindow = document.getElementById("popupWindow");
-    const closePopup = document.querySelector(".close-popup");
- 
+    const closePopupButton = document.querySelector(".close-popup");
+
+    if (!searchInput || !bookList || !searchButton) {
+      return;
+    }
+
     let selectedBook = "";
- 
-    // Evento para buscar mientras se escribe
-    searchInput.addEventListener("keyup", function () {
+
+    searchInput.addEventListener("input", function () {
       let query = this.value.trim();
       if (query.length === 0) {
         bookList.style.display = "none";
-        selectedBook = ""; // Reinicia el valor de selectedBook cuando el input está vacío
+        bookList.innerHTML = "";
+        selectedBook = "";
         return;
       }
- 
+
       fetch(`/searchBooks?query=${encodeURIComponent(query)}`)
-        .then(response => response.json())
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          return response.json();
+        })
         .then(data => {
           bookList.innerHTML = "";
-          if (data.length === 0) {
+          if (!Array.isArray(data) || data.length === 0) {
             bookList.style.display = "none";
             return;
           }
- 
+
           data.forEach(book => {
             let li = document.createElement("li");
             li.className = "list-group-item";
             li.textContent = book;
+            li.tabIndex = 0;
             li.onclick = function () {
               searchInput.value = book;
               selectedBook = book;
               bookList.style.display = "none";
-              searchBookDetails(book); // Buscar detalles automáticamente
+              searchBookDetails(book);
+            };
+            li.onkeydown = function (event) {
+              if (event.key === "Enter") {
+                li.click();
+              }
             };
             bookList.appendChild(li);
           });
- 
+
           bookList.style.display = "block";
         })
         .catch(error => console.error("Error al buscar libros:", error));
     });
- 
-    // Evento para el botón de búsqueda
+
     searchButton.addEventListener("click", function (event) {
       event.preventDefault();
- 
+
       if (searchInput.value.trim() === "") {
-        Swal.fire({
-          title: 'Atención',
-          text: 'Por favor, ingesa o selecciona un libro',
-          icon: 'warning',
-          confirmButtonText: 'OK'
-        });
-        
+        showAlert('Atencion', 'Por favor, ingresa o selecciona un libro', 'warning');
         return;
       }
- 
-      searchBookDetails(selectedBook);
-      selectedBook = ""; // Reinicia el valor después de buscar
+
+      const bookTitle = selectedBook || searchInput.value.trim();
+      searchBookDetails(bookTitle);
+      selectedBook = "";
     });
- 
-    // Función para buscar detalles del libro y mostrar el modal
+
     function searchBookDetails(bookTitle) {
+      bookTitle = (bookTitle || "").trim();
+
+      if (bookTitle === "") {
+        showAlert('Atencion', 'Por favor, ingresa o selecciona un libro', 'warning');
+        return;
+      }
+
       fetch(`/getBookDetails?title=${encodeURIComponent(bookTitle)}`)
-        .then(response => response.json())
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+          return response.json();
+        })
         .then(data => {
           if (!data || Object.keys(data).length === 0) {
-                        Swal.fire({
-              title: 'Error',
-              text: 'No se encontraron detalles para este libro',
-              icon: 'error',
-              confirmButtonText: 'OK',
-              customClass: {
-                  popup: 'malva-popup',
-                  confirmButton: 'malva-confirm-button'
-              }
-          });
+            showAlert('Error', 'No se encontraron detalles para este libro', 'error');
             return;
           }
- 
+
+          if (!popupWindow) {
+            window.location.href = `/home?bookTitle=${encodeURIComponent(data.titulo || bookTitle)}`;
+            return;
+          }
+
           document.getElementById("bookTitle").textContent = data.titulo;
           document.getElementById("bookAuthor").textContent = data.autor;
           document.getElementById("bookGenre").textContent = data.genero;
           document.getElementById("bookYear").textContent = data.anioEdicion;
           document.getElementById("bookRating").textContent = data.puntuacion;
           document.getElementById("bookSynopsis").textContent = data.sinopsis;
-          document.getElementById("bookCover").src = data.cover_image || "default-cover.jpg";
- 
+          document.getElementById("bookCover").src = data.cover_image || "/images/portadaLibro.jpg";
+
           popupWindow.style.display = "block";
-          overlay.classList.add('active');
+          if (overlay) {
+            overlay.classList.add('active');
+          }
         })
         .catch(error => console.error("Error al obtener detalles del libro:", error));
     }
- 
-    // Evento para cerrar la ventana emergente
-    closePopup.addEventListener("click", function () {
-      popupWindow.style.display = "none";
-      overlay.classList.remove('active');
-      searchInput.value = "";
-    });
+
+    if (closePopupButton && popupWindow) {
+      closePopupButton.addEventListener("click", function () {
+        popupWindow.style.display = "none";
+        if (overlay) {
+          overlay.classList.remove('active');
+        }
+        searchInput.value = "";
+      });
+    }
+
+    const initialBookTitle = new URLSearchParams(window.location.search).get("bookTitle");
+    if (initialBookTitle) {
+      searchInput.value = initialBookTitle;
+      searchBookDetails(initialBookTitle);
+      window.history.replaceState(null, "", window.location.pathname);
+    }
 });
- 
-// función para cerrar el modal de 3 botones //
+
+function showAlert(title, text, icon) {
+  if (typeof Swal !== "undefined") {
+    Swal.fire({
+      title,
+      text,
+      icon,
+      confirmButtonText: 'OK',
+      customClass: {
+        popup: 'malva-popup',
+        confirmButton: 'malva-confirm-button'
+      }
+    });
+    return;
+  }
+
+  alert(text);
+}
+
 function closePopup() {
-    document.getElementById("popupWindow").style.display = "none";
-    document.querySelector(".overlay").classList.remove("active");
+    const popupWindow = document.getElementById("popupWindow");
+    const overlay = document.querySelector(".overlay");
+
+    if (popupWindow) {
+      popupWindow.style.display = "none";
+    }
+
+    if (overlay) {
+      overlay.classList.remove("active");
+    }
 }

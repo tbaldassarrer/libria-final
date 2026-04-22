@@ -15,6 +15,11 @@ import jakarta.servlet.http.HttpServletResponse;
 @Controller
 public class HomeController {
 
+    @GetMapping("/")
+    public String root() {
+        return "redirect:/home";
+    }
+
     @GetMapping("/home")
     public String home(Model model, Principal principal) {
         if (principal != null) {
