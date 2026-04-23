@@ -13,6 +13,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     let selectedBook = "";
+    let selectedGoogleId = "";
+    let searchAbortController = null;
 
     searchInput.addEventListener("input", function () {
       let query = this.value.trim();
@@ -20,10 +22,22 @@ document.addEventListener("DOMContentLoaded", function () {
         bookList.style.display = "none";
         bookList.innerHTML = "";
         selectedBook = "";
+        selectedGoogleId = "";
         return;
       }
 
-      fetch(`/searchBooks?query=${encodeURIComponent(query)}`)
+      if (searchAbortController) {
+        searchAbortController.abort();
+      }
+      searchAbortController = new AbortController();
+
+      selectedBook = "";
+      selectedGoogleId = "";
+      showSearchLoading();
+
+      fetch(`/searchBooks?query=${encodeURIComponent(query)}`, {
+        signal: searchAbortController.signal
+      })
         .then(response => {
           if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
@@ -38,15 +52,24 @@ document.addEventListener("DOMContentLoaded", function () {
           }
 
           data.forEach(book => {
+            const suggestion = normalizeBookSuggestion(book);
             let li = document.createElement("li");
             li.className = "list-group-item";
-            li.textContent = book;
+            li.innerHTML = `
+              <img class="book-suggestion-cover" src="${suggestion.cover}" alt="">
+              <span class="book-suggestion-text">
+                <strong>${escapeHtml(suggestion.title)}</strong>
+                <small>${escapeHtml(suggestion.author)}${suggestion.year ? " · " + escapeHtml(suggestion.year) : ""}</small>
+              </span>
+              <span class="book-suggestion-source">${escapeHtml(suggestion.source)}</span>
+            `;
             li.tabIndex = 0;
             li.onclick = function () {
-              searchInput.value = book;
-              selectedBook = book;
+              searchInput.value = suggestion.title;
+              selectedBook = suggestion.title;
+              selectedGoogleId = suggestion.googleId || "";
               bookList.style.display = "none";
-              searchBookDetails(book);
+              searchBookDetails(suggestion.title, selectedGoogleId);
             };
             li.onkeydown = function (event) {
               if (event.key === "Enter") {
@@ -58,7 +81,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
           bookList.style.display = "block";
         })
-        .catch(error => console.error("Error al buscar libros:", error));
+        .catch(error => {
+          if (error.name === "AbortError") return;
+          showSearchMessage("No se pudieron cargar sugerencias. Intenta de nuevo.");
+          console.error("Error al buscar libros:", error);
+        });
     });
 
     searchButton.addEventListener("click", function (event) {
@@ -70,19 +97,26 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       const bookTitle = selectedBook || searchInput.value.trim();
-      searchBookDetails(bookTitle);
+      searchBookDetails(bookTitle, selectedGoogleId);
       selectedBook = "";
+      selectedGoogleId = "";
     });
 
-    function searchBookDetails(bookTitle) {
+    function searchBookDetails(bookTitle, googleId = "") {
       bookTitle = (bookTitle || "").trim();
 
-      if (bookTitle === "") {
+      if (bookTitle === "" && !googleId) {
         showAlert('Atencion', 'Por favor, ingresa o selecciona un libro', 'warning');
         return;
       }
 
-      fetch(`/getBookDetails?title=${encodeURIComponent(bookTitle)}`)
+      showSearchMessage("Cargando detalles del libro...");
+
+      const params = new URLSearchParams();
+      if (bookTitle) params.set("title", bookTitle);
+      if (googleId) params.set("googleId", googleId);
+
+      fetch(`/getBookDetails?${params.toString()}`)
         .then(response => {
           if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
@@ -91,9 +125,12 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .then(data => {
           if (!data || Object.keys(data).length === 0) {
-            showAlert('Error', 'No se encontraron detalles para este libro', 'error');
+            showSearchMessage("No se encontraron detalles para este libro.");
             return;
           }
+
+          bookList.style.display = "none";
+          bookList.innerHTML = "";
 
           if (!popupWindow) {
             window.location.href = `/home?bookTitle=${encodeURIComponent(data.titulo || bookTitle)}`;
@@ -113,7 +150,10 @@ document.addEventListener("DOMContentLoaded", function () {
             overlay.classList.add('active');
           }
         })
-        .catch(error => console.error("Error al obtener detalles del libro:", error));
+        .catch(error => {
+          showSearchMessage("No se pudieron cargar los detalles. Intenta de nuevo.");
+          console.error("Error al obtener detalles del libro:", error);
+        });
     }
 
     if (closePopupButton && popupWindow) {
@@ -131,6 +171,15 @@ document.addEventListener("DOMContentLoaded", function () {
       searchInput.value = initialBookTitle;
       searchBookDetails(initialBookTitle);
       window.history.replaceState(null, "", window.location.pathname);
+    }
+
+    function showSearchLoading() {
+      showSearchMessage("Buscando en Google Books...");
+    }
+
+    function showSearchMessage(message) {
+      bookList.innerHTML = `<li class="list-group-item search-status">${escapeHtml(message)}</li>`;
+      bookList.style.display = "block";
     }
 });
 
@@ -150,6 +199,33 @@ function showAlert(title, text, icon) {
   }
 
   alert(text);
+}
+
+function normalizeBookSuggestion(book) {
+  if (typeof book === "string") {
+    return {
+      title: book,
+      author: "Autor desconocido",
+      year: "",
+      cover: "/images/portadaLibro.jpg",
+      source: "Libria"
+    };
+  }
+
+  return {
+    title: book?.titulo || "Titulo desconocido",
+    author: book?.autor || "Autor desconocido",
+    year: book?.anioEdicion || "",
+    cover: book?.cover_image || "/images/portadaLibro.jpg",
+    source: book?.source || "Google Books",
+    googleId: book?.googleId || ""
+  };
+}
+
+function escapeHtml(value) {
+  const div = document.createElement("div");
+  div.textContent = value || "";
+  return div.innerHTML;
 }
 
 function closePopup() {

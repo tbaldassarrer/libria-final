@@ -3,8 +3,10 @@ package es.prw.controllers;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,35 +37,78 @@ public class SearchBookController {
 
     @GetMapping("/searchBooks")
     @ResponseBody
-    public List<String> searchBooks(@RequestParam("query") String query) {
+    public List<Map<String, String>> searchBooks(@RequestParam("query") String query) {
         if (query == null || query.trim().isEmpty()) {
             return new ArrayList<>();
         }
 
+        String cleanQuery = query.trim();
+        List<Map<String, String>> suggestions = new ArrayList<>();
+        Set<String> seenTitles = new LinkedHashSet<>();
+
         try {
-            return bookRepository.findTitulosStartingWith(query.trim())
+            googleBooksService.searchSuggestions(cleanQuery, MAX_SUGGESTIONS)
                     .stream()
-                    .limit(MAX_SUGGESTIONS)
-                    .toList();
+                    .filter(book -> seenTitles.add(book.getOrDefault("titulo", "").toLowerCase()))
+                    .forEach(suggestions::add);
         } catch (Exception e) {
-            System.out.println("Error al buscar libros en BD: " + e.getMessage());
-            return new ArrayList<>();
+            System.out.println("Error al buscar libros en Google Books: " + e.getMessage());
         }
+
+        if (suggestions.size() < MAX_SUGGESTIONS) {
+            try {
+                bookRepository.findByTituloOrAutorContaining(cleanQuery)
+                        .stream()
+                        .limit(MAX_SUGGESTIONS)
+                        .forEach(book -> addSuggestion(suggestions, seenTitles, book));
+            } catch (Exception e) {
+                System.out.println("Error al buscar libros en BD: " + e.getMessage());
+            }
+        }
+
+        return suggestions
+                .stream()
+                .limit(MAX_SUGGESTIONS)
+                .toList();
+    }
+
+    private void addSuggestion(List<Map<String, String>> suggestions, Set<String> seenTitles, Book book) {
+        if (book == null || book.getTitulo() == null || !seenTitles.add(book.getTitulo().toLowerCase())) {
+            return;
+        }
+
+        Map<String, String> suggestion = new HashMap<>();
+        suggestion.put("titulo", book.getTitulo());
+        suggestion.put("autor", book.getAutor());
+        suggestion.put("anioEdicion", book.getAnioEdicion());
+        suggestion.put("cover_image", book.getCoverImage());
+        suggestion.put("source", "Libria");
+        suggestions.add(suggestion);
     }
 
     @GetMapping("/getBookDetails")
     @ResponseBody
-    public Map<String, String> getBookDetails(@RequestParam("title") String title) {
+    public Map<String, String> getBookDetails(
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "googleId", required = false) String googleId) {
         Map<String, String> bookDetails = new HashMap<>();
 
-        if (title == null || title.trim().isEmpty()) {
+        if ((title == null || title.trim().isEmpty()) && (googleId == null || googleId.trim().isEmpty())) {
             return bookDetails;
         }
 
         try {
-            Book book = bookRepository.findFirstByTituloIgnoreCase(title.trim());
-            if (book == null) {
-                book = googleBooksService.findOrCreateByTitle(title.trim());
+            Book book = null;
+            if (googleId != null && !googleId.trim().isEmpty()) {
+                book = googleBooksService.findOrCreateByGoogleId(googleId.trim());
+            }
+
+            if (book == null && title != null && !title.trim().isEmpty()) {
+                book = bookRepository.findFirstByTituloIgnoreCase(title.trim());
+            }
+
+            if (book == null && title != null && !title.trim().isEmpty()) {
+                book = googleBooksService.findOrCreateByQuery(title.trim());
             }
 
             if (book != null) {

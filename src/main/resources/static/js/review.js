@@ -613,3 +613,78 @@ function readJsonResponse(response) {
         return data;
     });
 }
+
+function deleteReviewEntry(idLibro, title) {
+    Swal.fire({
+        title: "Eliminar reseña",
+        text: `¿Quieres eliminar la reseña de "${title}"?`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Eliminar",
+        cancelButtonText: "Cancelar",
+        customClass: {
+            popup: "malva-popup",
+            confirmButton: "malva-confirm-button"
+        }
+    }).then(result => {
+        if (!result.isConfirmed) return;
+
+        fetch("/deleteReview", {
+            method: "POST",
+            headers: formHeaders(),
+            body: `idLibro=${encodeURIComponent(idLibro)}`
+        })
+        .then(readJsonResponse)
+        .then(data => {
+            if (!data.success) {
+                throw new Error(data.message || "No se pudo eliminar la reseña.");
+            }
+
+            if (typeof loadReviews === "function") loadReviews();
+            if (typeof loadFavorites === "function") loadFavorites();
+            if (typeof loadLibrary === "function") loadLibrary();
+        })
+        .catch(error => Swal.fire("Error", error.message, "error"));
+    });
+}
+
+function loadReviews() {
+    fetch("/getReviews")
+    .then(response => response.json())
+    .then(data => {
+        const reviewsContainer = document.querySelector(".resenias");
+        if (!reviewsContainer) return;
+
+        reviewsContainer.innerHTML = "";
+
+        if (data.length === 0) {
+            reviewsContainer.innerHTML = "<p>No tienes reseñas guardadas.</p>";
+            return;
+        }
+
+        data.forEach(review => {
+            const reviewCard = document.createElement("div");
+            reviewCard.classList.add("resenia-card");
+
+            let starsHTML = "";
+            for (let i = 0; i < parseInt(review.puntuacion || 0, 10); i++) {
+                starsHTML += "★";
+            }
+
+            const text = document.createElement("p");
+            text.textContent = `"${review.resenia}"`;
+
+            const author = document.createElement("div");
+            author.className = "resenia-autor";
+            author.textContent = `${review.titulo} - ${starsHTML}`;
+
+            reviewCard.append(text, author);
+            reviewCard.appendChild(createDeleteButton(`Eliminar reseña de ${review.titulo}`, () => {
+                deleteReviewEntry(review.idLibro, review.titulo);
+            }));
+
+            reviewsContainer.appendChild(reviewCard);
+        });
+    })
+    .catch(error => console.error("Error al cargar reseñas:", error));
+}

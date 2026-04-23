@@ -25,6 +25,9 @@ public class User {
     @Column(name = "password", nullable = false)
     private String password;
 
+    @Column(name = "desafio_lectura")
+    private Integer desafioLectura = 10;
+
     // Constructor vacío obligatorio para JPA
     public User() {}
 
@@ -65,5 +68,13 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public int getDesafioLectura() {
+        return desafioLectura != null ? desafioLectura : 10;
+    }
+
+    public void setDesafioLectura(Integer desafioLectura) {
+        this.desafioLectura = desafioLectura;
     }
 }

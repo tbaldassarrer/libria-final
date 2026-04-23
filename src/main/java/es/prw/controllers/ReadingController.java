@@ -134,7 +134,7 @@ public class ReadingController {
             db.open();
             Connection connection = db.connection;
 
-            String sql = "SELECT l.titulo, l.cover_image, rl.fechaInicio FROM registrolectura rl " +
+            String sql = "SELECT l.idLibro, l.titulo, l.cover_image, rl.fechaInicio FROM registrolectura rl " +
                          "JOIN libros l ON rl.idLibro = l.idLibro " +
                          "JOIN usuariolector u ON rl.idUsuario = u.id_usuario " +
                          "WHERE u.nombre_usuario = ? AND rl.estadoLectura = 'Completado' " +
@@ -145,6 +145,7 @@ public class ReadingController {
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         Map<String, String> book = new HashMap<>();
+                        book.put("idLibro", String.valueOf(rs.getInt("idLibro")));
                         book.put("titulo", rs.getString("titulo"));
                         book.put("cover_image", rs.getString("cover_image"));
                         book.put("fechaInicio", rs.getString("fechaInicio"));
@@ -259,7 +260,7 @@ public class ReadingController {
             db.open();
             Connection connection = db.connection;
 
-            String sql = "SELECT l.titulo, l.cover_image FROM registrolectura rl " +
+            String sql = "SELECT l.idLibro, l.titulo, l.cover_image FROM registrolectura rl " +
                          "JOIN libros l ON rl.idLibro = l.idLibro " +
                          "JOIN usuariolector u ON rl.idUsuario = u.id_usuario " +
                          "WHERE u.nombre_usuario = ? AND rl.estadoLectura = 'Próximas Lecturas'";
@@ -268,6 +269,7 @@ public class ReadingController {
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         Map<String, String> book = new HashMap<>();
+                        book.put("idLibro", String.valueOf(rs.getInt("idLibro")));
                         book.put("titulo", rs.getString("titulo"));
                         book.put("cover_image", rs.getString("cover_image"));
                         books.add(book);
@@ -659,6 +661,53 @@ public Map<String, Object> checkIfBookExists(@RequestParam("title") String title
             response.put("success", false);
             response.put("message", "Error al eliminar el libro en progreso: " + e.getMessage());
         }
+        return response;
+    }
+
+    @PostMapping("/deleteReadingEntry")
+    @ResponseBody
+    public Map<String, Object> deleteReadingEntry(
+            @RequestParam("idLibro") int idLibro,
+            @RequestParam("estadoLectura") String estadoLectura,
+            Principal principal) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        if (principal == null) {
+            response.put("success", false);
+            response.put("message", "Usuario no autenticado.");
+            return response;
+        }
+
+        if (!estadoLectura.equals("Completado")
+                && !estadoLectura.equals("En progreso")
+                && !estadoLectura.equals("Próximas Lecturas")) {
+            response.put("success", false);
+            response.put("message", "Estado de lectura no válido.");
+            return response;
+        }
+
+        String username = principal.getName();
+
+        try (MySqlConnection db = new MySqlConnection()) {
+            db.open();
+            Connection connection = db.connection;
+
+            String sql = "DELETE rl FROM registrolectura rl " +
+                    "JOIN usuariolector u ON rl.idUsuario = u.id_usuario " +
+                    "WHERE u.nombre_usuario = ? AND rl.idLibro = ? AND rl.estadoLectura = ?";
+
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                ps.setString(1, username);
+                ps.setInt(2, idLibro);
+                ps.setString(3, estadoLectura);
+                response.put("success", ps.executeUpdate() > 0);
+            }
+        } catch (SQLException e) {
+            response.put("success", false);
+            response.put("message", "Error al eliminar el libro: " + e.getMessage());
+        }
+
         return response;
     }
     

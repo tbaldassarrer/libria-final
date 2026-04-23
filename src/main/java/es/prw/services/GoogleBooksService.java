@@ -6,7 +6,13 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Locale;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +45,9 @@ public class GoogleBooksService {
             return existingBook;
         }
 
-        JsonNode items = getGoogleBooks("intitle:" + cleanTitle, 1);
+        JsonNode items = firstAvailableGoogleResults(
+                "intitle:" + cleanTitle,
+                cleanTitle);
         if (items == null || !items.isArray() || items.isEmpty()) {
             return null;
         }
@@ -77,12 +85,138 @@ public class GoogleBooksService {
         }
     }
 
-    public List<String> searchTitles(String query, int limit) {
-        List<String> titles = new ArrayList<>();
-        JsonNode items = getGoogleBooks(query, limit);
+    public Book findOrCreateByQuery(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return null;
+        }
 
+        String cleanQuery = query.trim();
+        Book existingBook = bookRepository.findFirstByTituloIgnoreCase(cleanQuery);
+        if (existingBook != null) {
+            return existingBook;
+        }
+
+        JsonNode items = firstAvailableGoogleResults(cleanQuery, "inauthor:" + cleanQuery, "intitle:" + cleanQuery);
+        if (items == null || !items.isArray() || items.isEmpty()) {
+            return null;
+        }
+
+        String bestTitle = text(items.get(0).path("volumeInfo").path("title"), cleanQuery);
+        return findOrCreateByTitle(bestTitle);
+    }
+
+    public Book findOrCreateByGoogleId(String googleId) {
+        if (googleId == null || googleId.trim().isEmpty()) {
+            return null;
+        }
+
+        URI uri = UriComponentsBuilder
+                .fromUriString("https://www.googleapis.com/books/v1/volumes/{id}")
+                .buildAndExpand(googleId.trim())
+                .encode()
+                .toUri();
+
+        try {
+            JsonNode item = restTemplate.getForObject(uri, JsonNode.class);
+            if (item == null || item.isMissingNode() || item.isNull()) {
+                return null;
+            }
+
+            return saveGoogleBook(item);
+        } catch (Exception e) {
+            System.out.println("Error consultando Google Books por id: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public List<String> searchTitles(String query, int limit) {
+        Set<String> titles = new LinkedHashSet<>();
+        collectTitles(titles, getGoogleBooks(query, limit, true, "relevance"));
+        collectTitles(titles, getGoogleBooks(query, limit, false, "relevance"));
+        collectTitles(titles, getGoogleBooks(query, limit, false, "newest"));
+
+        return titles.stream()
+                .limit(Math.max(1, limit))
+                .toList();
+    }
+
+    public List<Map<String, String>> searchSuggestions(String query, int limit) {
+        List<Map<String, String>> suggestions = new ArrayList<>();
+        Set<String> seenTitles = new LinkedHashSet<>();
+        String cleanQuery = query == null ? "" : query.trim();
+        int fetchLimit = Math.max(limit * 2, 10);
+
+        collectSuggestions(suggestions, seenTitles, cleanQuery,
+                getGoogleBooks("inauthor:" + cleanQuery, fetchLimit, true, "relevance"), limit);
+        collectSuggestions(suggestions, seenTitles, cleanQuery,
+                getGoogleBooks("inauthor:" + cleanQuery, fetchLimit, false, "relevance"), limit);
+        collectSuggestions(suggestions, seenTitles, cleanQuery,
+                getGoogleBooks("intitle:" + cleanQuery, fetchLimit, true, "relevance"), limit);
+        collectSuggestions(suggestions, seenTitles, cleanQuery,
+                getGoogleBooks("intitle:" + cleanQuery, fetchLimit, false, "relevance"), limit);
+        collectSuggestions(suggestions, seenTitles, cleanQuery,
+                getGoogleBooks(cleanQuery, fetchLimit, true, "relevance"), limit);
+        collectSuggestions(suggestions, seenTitles, cleanQuery,
+                getGoogleBooks(cleanQuery, fetchLimit, false, "relevance"), limit);
+        collectSuggestions(suggestions, seenTitles, cleanQuery,
+                getGoogleBooks(cleanQuery, fetchLimit, false, "newest"), limit);
+
+        return suggestions.stream()
+                .limit(Math.max(1, limit))
+                .toList();
+    }
+
+    private JsonNode getGoogleBooks(String query, int limit) {
+        return getGoogleBooks(query, limit, true, "relevance");
+    }
+
+    private JsonNode getGoogleBooks(String query, int limit, boolean restrictToSpanish, String orderBy) {
+        UriComponentsBuilder builder = UriComponentsBuilder
+                .fromUriString("https://www.googleapis.com/books/v1/volumes")
+                .queryParam("q", query)
+                .queryParam("printType", "books")
+                .queryParam("orderBy", orderBy)
+                .queryParam("maxResults", Math.max(1, limit));
+
+        if (restrictToSpanish) {
+            builder.queryParam("langRestrict", "es");
+        }
+
+        URI uri = builder.build().encode().toUri();
+
+        try {
+            JsonNode response = restTemplate.getForObject(uri, JsonNode.class);
+            return response == null ? null : response.path("items");
+        } catch (Exception e) {
+            System.out.println("Error consultando Google Books: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private JsonNode firstAvailableGoogleResults(String... queries) {
+        for (String query : queries) {
+            JsonNode items = getGoogleBooks(query, 5, true, "relevance");
+            if (items != null && items.isArray() && !items.isEmpty()) {
+                return items;
+            }
+
+            items = getGoogleBooks(query, 5, false, "relevance");
+            if (items != null && items.isArray() && !items.isEmpty()) {
+                return items;
+            }
+
+            items = getGoogleBooks(query, 5, false, "newest");
+            if (items != null && items.isArray() && !items.isEmpty()) {
+                return items;
+            }
+        }
+
+        return null;
+    }
+
+    private void collectTitles(Set<String> titles, JsonNode items) {
         if (items == null || !items.isArray()) {
-            return titles;
+            return;
         }
 
         for (JsonNode item : items) {
@@ -91,27 +225,105 @@ public class GoogleBooksService {
                 titles.add(title);
             }
         }
-
-        return titles;
     }
 
-    private JsonNode getGoogleBooks(String query, int limit) {
-        URI uri = UriComponentsBuilder
-                .fromUriString("https://www.googleapis.com/books/v1/volumes")
-                .queryParam("q", query)
-                .queryParam("langRestrict", "es")
-                .queryParam("orderBy", "relevance")
-                .queryParam("maxResults", Math.max(1, limit))
-                .build()
-                .encode()
-                .toUri();
+    private void collectSuggestions(
+            List<Map<String, String>> suggestions,
+            Set<String> seenTitles,
+            String query,
+            JsonNode items,
+            int limit) {
+
+        if (items == null || !items.isArray() || suggestions.size() >= limit) {
+            return;
+        }
+
+        for (JsonNode item : items) {
+            if (suggestions.size() >= limit) {
+                return;
+            }
+
+            JsonNode info = item.path("volumeInfo");
+            String title = text(info.path("title"), "");
+            String author = joinAuthors(info.path("authors"));
+
+            if (!matchesSuggestionQuery(title, author, query)) {
+                continue;
+            }
+
+            if (title.isBlank() || !seenTitles.add(title.toLowerCase())) {
+                continue;
+            }
+
+            Map<String, String> suggestion = new HashMap<>();
+            suggestion.put("googleId", text(item.path("id"), ""));
+            suggestion.put("titulo", title);
+            suggestion.put("autor", author);
+            suggestion.put("anioEdicion", yearFromDate(text(info.path("publishedDate"), "")));
+            suggestion.put("cover_image", coverFrom(info.path("imageLinks")));
+            suggestion.put("source", "Google Books");
+            suggestions.add(suggestion);
+        }
+    }
+
+    private boolean matchesSuggestionQuery(String title, String author, String query) {
+        if (query == null || query.isBlank()) {
+            return true;
+        }
+
+        String haystack = (title + " " + author).toLowerCase(Locale.ROOT);
+        List<String> tokens = Arrays.stream(query.toLowerCase(Locale.ROOT).split("\\s+"))
+                .map(String::trim)
+                .filter(token -> token.length() >= 2)
+                .toList();
+
+        if (tokens.isEmpty()) {
+            return haystack.contains(query.toLowerCase(Locale.ROOT));
+        }
+
+        for (String token : tokens) {
+            if (!haystack.contains(token)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private Book saveGoogleBook(JsonNode item) {
+        JsonNode info = item.path("volumeInfo");
+        String googleTitle = text(info.path("title"), "");
+        if (googleTitle.isBlank()) {
+            return null;
+        }
+
+        Book existingBook = bookRepository.findFirstByTituloIgnoreCase(googleTitle);
+        if (existingBook != null) {
+            return existingBook;
+        }
+
+        String author = truncate(joinAuthors(info.path("authors")), 255);
+        String genre = truncate(firstValue(info.path("categories"), "Sin genero"), 255);
+        String year = truncate(yearFromDate(text(info.path("publishedDate"), "")), 255);
+        String synopsis = truncate(text(info.path("description"), "Sin descripcion disponible."), 2000);
+        String rating = truncate(text(info.path("averageRating"), "N/A"), 255);
+        String cover = truncate(coverFrom(info.path("imageLinks")), 255);
+        String isbn = truncate(isbnFrom(info.path("industryIdentifiers")), 255);
+
+        Book book = new Book(
+                truncate(googleTitle, 255),
+                author,
+                genre,
+                year,
+                synopsis,
+                rating,
+                cover);
 
         try {
-            JsonNode response = restTemplate.getForObject(uri, JsonNode.class);
-            return response == null ? null : response.path("items");
+            return bookRepository.save(book);
         } catch (Exception e) {
-            System.out.println("Error consultando Google Books: " + e.getMessage());
-            return null;
+            System.out.println("No se pudo guardar con JPA; probando insercion JDBC: " + e.getMessage());
+            return insertBookWithJdbc(isbn, googleTitle, author, genre, year, synopsis, rating, cover);
         }
     }
 
