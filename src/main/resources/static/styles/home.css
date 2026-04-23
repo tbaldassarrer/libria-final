@@ -2,6 +2,17 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap");
 
+:root {
+  --libria-primary: hsl(273, 49%, 24%);
+  --libria-primary-hover: hsl(273, 50%, 20%);
+  --libria-primary-soft: hsl(273, 49%, 24%);
+  --libria-primary-tint: hsl(273, 58%, 94%);
+  --libria-primary-tint-strong: hsl(273, 42%, 84%);
+  --libria-primary-border: hsla(273, 49%, 24%, 0.18);
+  --libria-primary-shadow: hsla(273, 49%, 24%, 0.22);
+  --libria-primary-text: hsl(273, 49%, 24%);
+}
+
 body {
   width: 100%;
   height: 100%;
@@ -11,11 +22,12 @@ body {
   min-height: 100vh;
   font-family: "Poppins", sans-serif;
  background-color: rgb(248, 240, 255);
+  padding-top: 28px;
 }
 
 /* Popup en tonos malva */
 .malva-popup {
-  background: linear-gradient(135deg, hsl(275, 60%, 36%),hsl(273, 81%, 69%));
+  background: linear-gradient(135deg, var(--libria-primary), hsl(273, 49%, 46%));
   border-radius: 10px;
   color: #fff;
   font-family: "Poppins", sans-serif;
@@ -23,7 +35,7 @@ body {
 
 /* Botón de confirmación en tono malva */
 .malva-confirm-button {
-  background-color: hsl(275, 60%, 36%) !important;
+  background-color: var(--libria-primary) !important;
   border: none !important;
   border-radius: 5px;
   padding: 10px 20px;
@@ -33,7 +45,7 @@ body {
 }
 
 .malva-confirm-button:hover {
-  background-color: hsl(275, 68%, 24%) !important;
+  background-color: var(--libria-primary-hover) !important;
 }
 
 .barra_superior {
@@ -41,9 +53,22 @@ body {
   align-items: center;
   justify-content: space-between; /* Distribuye los elementos: logo a la izquierda, menú centrado y barra de búsqueda a la derecha */
   padding: 10px 20px;
-  background-color: hsl(273, 57%, 75%);
-  border-bottom: 2px solid #ddd;
-  position: relative; /* Necesario para que los elementos dentro de ella se posicionen correctamente */
+  background-color: hsl(273, 49%, 24%);
+  border-bottom: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 5000;
+  box-shadow: 0 8px 18px rgba(63, 30, 89, 0.08);
+  backdrop-filter: blur(10px);
+  transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, backdrop-filter 180ms ease;
+}
+
+.barra_superior--scrolled {
+  background-color: rgba(248, 240, 255, 0.16);
+  border-bottom-color: transparent;
+  box-shadow: none;
 }
 
 .img-libria{
@@ -84,6 +109,10 @@ body {
   position: relative; /* Necesario para posicionar correctamente el contenedor de la lista */
 }
 
+.barra_superior--scrolled .search-bar {
+  background: rgba(255, 255, 255, 0.88);
+}
+
 .search-bar input {
   border: none;
   outline: none;
@@ -99,10 +128,23 @@ body {
   padding: 5px;
   font-size: 16px;
   color: #666;
+  border-radius: 999px;
+  transition: background-color 180ms ease, color 180ms ease, transform 180ms ease, opacity 180ms ease;
 }
 
 .search-bar button:hover {
   color: #ffffff;
+}
+
+.search-bar button:disabled {
+  cursor: wait;
+  opacity: 0.58;
+  transform: none;
+}
+
+.search-bar button:disabled:hover {
+  color: #666;
+  background: transparent;
 }
 /* Barra de búsqueda */
 .search-bar {
@@ -208,8 +250,8 @@ body {
   align-self: start;
   padding: 3px 6px;
   border-radius: 999px;
-  background: #f1e5ff;
-  color: #7d45b4;
+  background: var(--libria-primary-tint);
+  color: var(--libria-primary-text);
   font-size: 0.66rem;
   font-weight: 700;
 }
@@ -412,7 +454,7 @@ header {
 
 #edit-bg-btn {
   position: absolute;
-  top: 10px;
+  bottom: 16px;
   right: 10px;
   background-color: rgba(0, 0, 0, 0.5);
   color: white;
@@ -1848,6 +1890,10 @@ img {
 }
 
 @media (max-width: 700px) {
+  body {
+    padding-top: 92px;
+  }
+
   .barra_superior {
     flex-direction: column;
     align-items: stretch;
@@ -2205,6 +2251,10 @@ img {
 }
 
 @media (max-width: 520px) {
+  body {
+    padding-top: 108px;
+  }
+
   .site-footer {
     margin-top: 36px;
     padding: 24px 16px 22px;
@@ -2237,5 +2287,112 @@ img {
   .site-footer__creators {
     text-align: center;
   }
+}
+
+/* Ajuste de paleta para armonizar con la navbar */
+.book-actions button,
+.favorite-quotes-open-button,
+.logout-button,
+#submitReview,
+#favoriteQuoteSubmit,
+.favorite-quote-card__button:not(.favorite-quote-card__button--danger) {
+  background-color: var(--libria-primary);
+  color: #fff;
+}
+
+.book-actions button:hover,
+.favorite-quotes-open-button:hover,
+.logout-button:hover,
+#submitReview:hover,
+#favoriteQuoteSubmit:hover,
+.favorite-quote-card__button:not(.favorite-quote-card__button--danger):hover {
+  background-color: var(--libria-primary-tint-strong);
+  color: var(--libria-primary);
+}
+
+.btn-finish,
+.btn-delete-entry {
+  background-color: var(--libria-primary);
+  color: #fff;
+}
+
+.btn-finish:hover,
+.btn-delete-entry:hover {
+  background-color: var(--libria-primary-tint-strong);
+  color: var(--libria-primary);
+}
+
+.favorite-quotes-modal__header h3,
+.favorite-quotes-modal__close,
+.goal-stepper__button,
+.book-suggestion-source,
+.footer-social:hover,
+.footer-social:focus-visible {
+  color: var(--libria-primary-text);
+}
+
+.book-suggestion-source,
+.goal-stepper__button:hover {
+  background: var(--libria-primary-tint);
+}
+
+.favorite-quotes-modal__close,
+.favorite-quote-form__secondary {
+  background: hsla(273, 49%, 24%, 0.12);
+}
+
+.favorite-quotes-modal__close:hover,
+.favorite-quote-form__secondary:hover {
+  background: hsla(273, 49%, 24%, 0.2);
+}
+
+.favorite-quote-form,
+.favorite-quote-card {
+  box-shadow: inset 0 0 0 1px var(--libria-primary-border);
+}
+
+.favorite-quote-form__field textarea,
+.favorite-quote-form__field input,
+.goal-stepper {
+  border-color: var(--libria-primary-border);
+}
+
+.favorite-quote-form__field textarea:focus,
+.favorite-quote-form__field input:focus {
+  border-color: hsla(273, 49%, 24%, 0.45);
+  box-shadow: 0 0 0 3px hsla(273, 49%, 24%, 0.14);
+}
+
+.goal-stepper__buttons {
+  border-left-color: hsla(273, 49%, 24%, 0.18);
+}
+
+.progress-bar {
+  background-color: var(--libria-primary-text);
+}
+
+.reading-text,
+#biblio h2,
+.content h2,
+.progress-wrapper h2,
+.header__wrapper .cols__container .left__col h2,
+.header__wrapper .cols__container .right__col nav ul li a.active,
+.book-suggestion-source,
+.goal-stepper__button,
+.footer-social:hover,
+.footer-social:focus-visible {
+  color: var(--libria-primary) !important;
+}
+
+.progress-bar,
+.btn-finish,
+.btn-delete-entry,
+.book-actions button,
+.favorite-quotes-open-button,
+.logout-button,
+#submitReview,
+#favoriteQuoteSubmit,
+.favorite-quote-card__button:not(.favorite-quote-card__button--danger) {
+  box-shadow: 0 8px 18px var(--libria-primary-shadow);
 }
 

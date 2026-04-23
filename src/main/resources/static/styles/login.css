@@ -467,4 +467,30 @@ body {
   }
 }
 
+:root {
+  --libria-primary: hsl(273, 49%, 24%);
+}
+
+.custom-btn,
+.btn.custom-btn,
+.btn.btn-primary {
+  background-color: var(--libria-primary) !important;
+  border-color: var(--libria-primary) !important;
+}
+
+.custom-btn:hover,
+.btn.custom-btn:hover,
+.btn.btn-primary:hover {
+  background-color: hsl(273, 42%, 84%) !important;
+  border-color: hsl(273, 42%, 84%) !important;
+  color: var(--libria-primary) !important;
+}
+
+.custom-error-message,
+.custom-success-message {
+  color: var(--libria-primary);
+  border-color: var(--libria-primary);
+  box-shadow: 0px 4px 10px rgba(39, 24, 53, 0.2);
+}
+
 

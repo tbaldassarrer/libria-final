@@ -7,6 +7,16 @@ document.addEventListener("DOMContentLoaded", function () {
     loadCurrentReading();
     loadLibrary();
     loadFavorites();
+
+    const topBar = document.querySelector(".barra_superior");
+    if (topBar) {
+        const syncTopBarState = () => {
+            topBar.classList.toggle("barra_superior--scrolled", window.scrollY > 24);
+        };
+
+        syncTopBarState();
+        window.addEventListener("scroll", syncTopBarState, { passive: true });
+    }
 });
 
   

@@ -15,24 +15,113 @@ document.addEventListener("DOMContentLoaded", function () {
     let selectedBook = "";
     let selectedGoogleId = "";
     let searchAbortController = null;
+    let searchDebounceTimer = null;
+    let isSearching = false;
+    let currentSuggestions = [];
+
+    setSearchButtonState(false);
 
     searchInput.addEventListener("input", function () {
-      let query = this.value.trim();
+      const query = this.value.trim();
+
+      if (searchDebounceTimer) {
+        clearTimeout(searchDebounceTimer);
+      }
+
       if (query.length === 0) {
+        cancelPendingSearch();
         bookList.style.display = "none";
         bookList.innerHTML = "";
+        selectedBook = "";
+        selectedGoogleId = "";
+        currentSuggestions = [];
+        setSearchButtonState(false);
+        return;
+      }
+
+      selectedBook = "";
+      selectedGoogleId = "";
+
+      if (query.length < 2) {
+        cancelPendingSearch();
+        currentSuggestions = [];
+        showSearchMessage("Escribe al menos 2 letras para buscar.");
+        setSearchButtonState(false);
+        return;
+      }
+
+      searchDebounceTimer = setTimeout(() => {
+        fetchSuggestions(query);
+      }, 250);
+    });
+
+    searchInput.addEventListener("keydown", function (event) {
+      if (event.key !== "Enter") {
+        return;
+      }
+
+      event.preventDefault();
+
+      if (isSearching) {
+        return;
+      }
+
+      if (selectedBook || selectedGoogleId) {
+        searchBookDetails(selectedBook || searchInput.value.trim(), selectedGoogleId);
         selectedBook = "";
         selectedGoogleId = "";
         return;
       }
 
-      if (searchAbortController) {
-        searchAbortController.abort();
+      if (currentSuggestions.length > 0) {
+        const firstSuggestion = currentSuggestions[0];
+        searchInput.value = firstSuggestion.title;
+        selectedBook = firstSuggestion.title;
+        selectedGoogleId = firstSuggestion.googleId || "";
+        searchBookDetails(firstSuggestion.title, selectedGoogleId);
       }
-      searchAbortController = new AbortController();
+    });
 
-      selectedBook = "";
-      selectedGoogleId = "";
+    searchButton.addEventListener("click", function (event) {
+      event.preventDefault();
+
+      const query = searchInput.value.trim();
+
+      if (query === "") {
+        showAlert('Atencion', 'Por favor, escribe un titulo o un autor', 'warning');
+        return;
+      }
+
+      if (isSearching) {
+        return;
+      }
+
+      if (selectedBook || selectedGoogleId) {
+        searchBookDetails(selectedBook || query, selectedGoogleId);
+        selectedBook = "";
+        selectedGoogleId = "";
+        return;
+      }
+
+      if (currentSuggestions.length > 0) {
+        const firstSuggestion = currentSuggestions[0];
+        searchInput.value = firstSuggestion.title;
+        selectedBook = firstSuggestion.title;
+        selectedGoogleId = firstSuggestion.googleId || "";
+        searchBookDetails(firstSuggestion.title, selectedGoogleId);
+        selectedBook = "";
+        selectedGoogleId = "";
+        return;
+      }
+
+      showSearchMessage("Sigue escribiendo para ver sugerencias.");
+    });
+
+    function fetchSuggestions(query) {
+      cancelPendingSearch();
+      searchAbortController = new AbortController();
+      isSearching = true;
+      setSearchButtonState(true);
       showSearchLoading();
 
       fetch(`/searchBooks?query=${encodeURIComponent(query)}`, {
@@ -45,14 +134,19 @@ document.addEventListener("DOMContentLoaded", function () {
           return response.json();
         })
         .then(data => {
+          isSearching = false;
+          setSearchButtonState(false);
           bookList.innerHTML = "";
+
           if (!Array.isArray(data) || data.length === 0) {
+            currentSuggestions = [];
             bookList.style.display = "none";
             return;
           }
 
-          data.forEach(book => {
-            const suggestion = normalizeBookSuggestion(book);
+          currentSuggestions = data.map(normalizeBookSuggestion);
+
+          currentSuggestions.forEach(suggestion => {
             let li = document.createElement("li");
             li.className = "list-group-item";
             li.innerHTML = `
@@ -82,25 +176,17 @@ document.addEventListener("DOMContentLoaded", function () {
           bookList.style.display = "block";
         })
         .catch(error => {
-          if (error.name === "AbortError") return;
+          if (error.name === "AbortError") {
+            return;
+          }
+
+          isSearching = false;
+          setSearchButtonState(false);
+          currentSuggestions = [];
           showSearchMessage("No se pudieron cargar sugerencias. Intenta de nuevo.");
           console.error("Error al buscar libros:", error);
         });
-    });
-
-    searchButton.addEventListener("click", function (event) {
-      event.preventDefault();
-
-      if (searchInput.value.trim() === "") {
-        showAlert('Atencion', 'Por favor, ingresa o selecciona un libro', 'warning');
-        return;
-      }
-
-      const bookTitle = selectedBook || searchInput.value.trim();
-      searchBookDetails(bookTitle, selectedGoogleId);
-      selectedBook = "";
-      selectedGoogleId = "";
-    });
+    }
 
     function searchBookDetails(bookTitle, googleId = "") {
       bookTitle = (bookTitle || "").trim();
@@ -180,6 +266,20 @@ document.addEventListener("DOMContentLoaded", function () {
     function showSearchMessage(message) {
       bookList.innerHTML = `<li class="list-group-item search-status">${escapeHtml(message)}</li>`;
       bookList.style.display = "block";
+    }
+
+    function cancelPendingSearch() {
+      if (searchAbortController) {
+        searchAbortController.abort();
+        searchAbortController = null;
+      }
+      isSearching = false;
+    }
+
+    function setSearchButtonState(loading) {
+      searchButton.disabled = loading;
+      searchButton.setAttribute("aria-disabled", String(loading));
+      searchButton.title = loading ? "Buscando libros..." : "Buscar";
     }
 });
 

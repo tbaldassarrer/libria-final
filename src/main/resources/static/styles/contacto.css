@@ -422,3 +422,84 @@ body {
     grid-template-columns: repeat(2, auto);
   }
 }
+
+/* Navbar unificada */
+:root {
+  --libria-primary: hsl(273, 49%, 24%);
+}
+
+body {
+  padding-top: 76px;
+}
+
+.barra_superior {
+  background-color: var(--libria-primary);
+  border-bottom: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 5000;
+  box-shadow: 0 8px 18px rgba(63, 30, 89, 0.08);
+  backdrop-filter: blur(10px);
+  transition: background-color 180ms ease, box-shadow 180ms ease, backdrop-filter 180ms ease;
+}
+
+.barra_superior--scrolled {
+  background-color: rgba(39, 24, 53, 0.16);
+  box-shadow: none;
+}
+
+.barra_superior--scrolled .search-bar {
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.contact-container button {
+  background-color: var(--libria-primary);
+  color: #fff;
+}
+
+.contact-container button:hover {
+  background-color: hsl(273, 58%, 94%);
+  color: var(--libria-primary);
+}
+
+@media (max-width: 700px) {
+  body {
+    padding-top: 132px;
+  }
+}
+
+@media (max-width: 520px) {
+  body {
+    padding-top: 148px;
+  }
+}
+
+.malva-popup {
+  background: linear-gradient(135deg, var(--libria-primary), hsl(273, 49%, 38%));
+}
+
+.malva-confirm-button {
+  background-color: var(--libria-primary) !important;
+}
+
+.malva-confirm-button:hover {
+  background-color: hsl(273, 42%, 84%) !important;
+  color: var(--libria-primary) !important;
+}
+
+.contact-container h1,
+.contact-container label,
+.contact-container .alert-success {
+  color: var(--libria-primary);
+}
+
+.contact-container button {
+  box-shadow: 0 8px 18px rgba(39, 24, 53, 0.22);
+}
+
+.contact-container .alert-success,
+.custom-success-message {
+  border-color: var(--libria-primary);
+}
