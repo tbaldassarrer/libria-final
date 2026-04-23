@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
@@ -13,7 +13,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
     />
     <!-- CSS -->
-    <link rel="stylesheet" href="styles/home.css?v=7" />
+    <link rel="stylesheet" href="styles/home.css?v=10" />
 
      <!-- JS --> 
     
@@ -23,6 +23,7 @@
     <script src="js/review.js?v=4"></script>
     <script src="js/user.js?v=4"></script>
     <script src="js/favorites.js?v=4"></script>
+    <script src="js/quotes.js?v=2"></script>
    
 
   </head>
@@ -55,14 +56,14 @@
       <div class="book-info">
         <h2 id="bookTitle"></h2>
         <p><strong>Autor:</strong> <span id="bookAuthor"></span></p>
-        <p><strong>Género:</strong> <span id="bookGenre"></span></p>
-        <p><strong>Año de Edición:</strong> <span id="bookYear"></span></p>
-        <p><strong>Puntuación:</strong> <span id="bookRating"></span> ⭐</p>
+        <p><strong>G&eacute;nero:</strong> <span id="bookGenre"></span></p>
+        <p><strong>A&ntilde;o de Edici&oacute;n:</strong> <span id="bookYear"></span></p>
+        <p><strong>Puntuaci&oacute;n:</strong> <span id="bookRating"></span> &#11088;</p>
       </div>
       <div class="book-actions">
-        <button class="btn-action" onclick="addToLibrary(document.getElementById('bookTitle').textContent)">Añadir a libros leídos</button>
+        <button class="btn-action" onclick="addToLibrary(document.getElementById('bookTitle').textContent)">A&ntilde;adir a libros le&iacute;dos</button>
         <button class="btn-action">Comenzar a leer</button>
-        <button class="btn-action" onclick="addToUpcomingReads(document.getElementById('bookTitle').textContent, document.getElementById('bookCover').src)">Añadir a próximas lecturas</button>
+        <button class="btn-action" onclick="addToUpcomingReads(document.getElementById('bookTitle').textContent, document.getElementById('bookCover').src)">A&ntilde;adir a pr&oacute;ximas lecturas</button>
 
       </div>
     </div>
@@ -118,11 +119,11 @@
 
 <!-- Contenedor de la barra de progreso -->
 <div class="progress-wrapper">
-  <h2 class="reading-goal-title">Desafio de lectura anual</h2>
-  <h2>Desafío de lectura 2025</h2>
+  <h2 class="reading-goal-title">Desaf&iacute;o de lectura anual</h2>
+  <h2>Desaf&iacute;o de lectura 2025</h2>
   <div class="divisor">            
   </div>
-  <p class="reading-goal-description">¿Cumplirás tu objetivo de lectura anual? Ponte un reto real!</p>
+  <p class="reading-goal-description">&iquest;Cumplir&aacute;s tu objetivo de lectura anual? Ponte un reto real!</p>
   <div class="reading-goal-control">
     <span>Leer</span>
     <div class="goal-stepper">
@@ -161,16 +162,23 @@
 
 
           <div class="content">
-            <h2>✨ Mis citas favoritas ✨</h2>
-            <p><em>"Si el mundo desapareciera y él se salvara, yo seguiría viviendo. Pero si desapareciera él y lo demás continuara igual, yo no podría vivir." </em><br> <strong>- Cumbres Borrascosas</strong></p>
-            <p><em>"La rabia puede calentarte por la noche, y el orgullo herido puede alentar a un hombre hacer cosas maravillosas" </em><br> <strong>- El nombre del viento</strong></p>
-
+            <h2>&#10024; Mis citas favoritas &#10024;</h2>
+            <div id="favoriteQuotesPreview" class="favorite-quotes-preview">
+              <article class="favorite-quote-preview" th:each="quote : ${favoriteQuotesPreview}">
+                <p class="favorite-quote-preview__text">
+                  <em>"<span th:text="${quote.texto}">Cita</span>"</em>
+                </p>
+                <p class="favorite-quote-preview__work">- <span th:text="${quote.obra}">Obra</span></p>
+              </article>
+            </div>
+            <div class="favorite-quotes-actions">
+              <button type="button" id="openQuotesModal" class="favorite-quotes-open-button">Cargar mis citas</button>
+              <button type="button" id="addFavoriteQuoteButton" class="favorite-quotes-open-button">Añadir cita favorita</button>
+            </div>
           </div>
           <form th:action="@{/logout}" method="post">
-            <button type="submit" class="logout-button ">
-                <a class="text-logout">Cerrar sesión</a>
-            </button>
-        </form>
+  <button type="submit" class="logout-button">Cerrar sesi&oacute;n</button>
+</form>
         </div>
 
 
@@ -191,40 +199,40 @@
 <!-- Overlay del modal -->
 <div class="overlay-modal" id="overlayModal"></div>
 
-<!-- Modal de puntuación y reseña -->
+<!-- Modal de puntuaciÃ³n y reseÃ±a -->
 <div id="finishReadingModal" class="modal">
     <div class="modal-content">
         <span class="close-modal" onclick="closeFinishReadingModal()">&times;</span>
-        <h3>Puntúa y reseña el libro</h3>
+        <h3>Punt&uacute;a y rese&ntilde;a el libro</h3>
 
-       <!-- Estrellas de puntuación -->
+       <!-- Estrellas de puntuaciÃ³n -->
 <div class="stars">
-  <span data-value="1">★</span>
-  <span data-value="2">★</span>
-  <span data-value="3">★</span>
-  <span data-value="4">★</span>
-  <span data-value="5">★</span>
+  <span data-value="1">&#9733;</span>
+  <span data-value="2">&#9733;</span>
+  <span data-value="3">&#9733;</span>
+  <span data-value="4">&#9733;</span>
+  <span data-value="5">&#9733;</span>
 </div>
-        <!-- Campo de reseña -->
-        <textarea id="reviewText" placeholder="Escribe tu reseña aquí..."></textarea>
+        <!-- Campo de reseÃ±a -->
+        <textarea id="reviewText" placeholder="Escribe tu rese&ntilde;a aqu&iacute;..."></textarea>
 
   
-<!-- Botón para guardar -->
+<!-- BotÃ³n para guardar -->
 <button id="submitReview" onclick="submitReview()">Guardar</button>
     </div>
 </div>
 
         
-          <!-- Navegación de categorías -->
+          <!-- NavegaciÃ³n de categorÃ­as -->
            <div id="biblio">
-          <h2>Mi biblioteca 📖 </h2>
+          <h2>Mi biblioteca &#128214; </h2>
         </div>
           <nav>            
             <ul>
-              <li><a href="#" id="library-link">Libros leídos</a></li>
+              <li><a href="#" id="library-link">Libros le&iacute;dos</a></li>
               <li><a href="#" id="favorites-link">Favoritos</a></li>
-              <li><a href="#" id="upcoming-link">Próximas lecturas</a></li>
-              <li><a href="#" id="reviews-link">Mis reseñas</a></li>
+              <li><a href="#" id="upcoming-link">Pr&oacute;ximas lecturas</a></li>
+              <li><a href="#" id="reviews-link">Mis rese&ntilde;as</a></li>
             </ul>
           </nav>
         
@@ -240,12 +248,12 @@
             </div>
         
             <div id="favorites" class="content-section" style="display:none;">
-              <h2>Mis libros 5 ⭐</h2>
+              <h2>Mis libros 5 &#11088;</h2>
               <div class="favoritos">
                 
 
                 
-                <!-- Agrega  fotos o contenido dinámico aquí -->
+                <!-- Agrega  fotos o contenido dinÃ¡mico aquÃ­ -->
               </div>
             </div>
         
@@ -253,13 +261,13 @@
               <div class="proxLecturas">
                     
               </div>
-              <!-- Contenido de próximas lecturas -->
+              <!-- Contenido de prÃ³ximas lecturas -->
             </div>
         
             <div id="reviews" class="content-section" style="display:none;">
               <div class="resenias d-flex flex-wrap justify-content-center gap-3">
                   <div class="resenia-card">
-                      <p>"Este libro me atrapó desde la primera página. ¡Increíble historia!"</p>
+                      <p>"Este libro me atrap&oacute; desde la primera p&aacute;gina. &iexcl;Incre&iacute;ble historia!"</p>
                       <div class="resenia-autor">- El Nombre del Viento</div>
                   </div>
                   <div class="resenia-card">
@@ -267,11 +275,11 @@
                       <div class="resenia-autor">- Cumbres Borrascosas</div>
                   </div>
                   <div class="resenia-card">
-                      <p>"Definitivamente lo recomendaría a cualquier amante de la literatura."</p>
+                      <p>"Definitivamente lo recomendar&iacute;a a cualquier amante de la literatura."</p>
                       <div class="resenia-autor">- Orgullo y Prejuicio</div>
                   </div>
                   <div class="resenia-card">
-                    <p>"Un mundo lleno de dragones, intrigas y personajes que amarás"</p>
+                    <p>"Un mundo lleno de dragones, intrigas y personajes que amar&aacute;s"</p>
                     <div class="resenia-autor">- Alas de Sangre</div>
                 </div>
               </div>
@@ -283,6 +291,32 @@
 
 
 
+
+<div id="favoriteQuotesOverlay" class="favorite-quotes-overlay"></div>
+<div id="favoriteQuotesModal" class="favorite-quotes-modal" aria-hidden="true">
+  <div class="favorite-quotes-modal__header">
+    <h3>Mis citas favoritas</h3>
+    <button type="button" id="closeQuotesModal" class="favorite-quotes-modal__close" aria-label="Cerrar citas favoritas">&times;</button>
+  </div>
+  <div class="favorite-quotes-modal__content">
+    <form id="favoriteQuoteForm" class="favorite-quote-form">
+      <input type="hidden" id="favoriteQuoteId" />
+      <label class="favorite-quote-form__field">
+        <span>Cita</span>
+        <textarea id="favoriteQuoteText" maxlength="1200" placeholder="Escribe aquí tu cita favorita..."></textarea>
+      </label>
+      <label class="favorite-quote-form__field">
+        <span>Obra</span>
+        <input id="favoriteQuoteWork" type="text" maxlength="255" placeholder="Libro, saga o autora" />
+      </label>
+      <div class="favorite-quote-form__actions">
+        <button type="submit" id="favoriteQuoteSubmit">Agregar cita</button>
+        <button type="button" id="favoriteQuoteCancel" class="favorite-quote-form__secondary">Cancelar</button>
+      </div>
+    </form>
+    <div id="favoriteQuotesList" class="favorite-quotes-list"></div>
+  </div>
+</div>
 
 <footer class="site-footer">
   <div class="site-footer__inner">
@@ -312,5 +346,14 @@
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
 
 
