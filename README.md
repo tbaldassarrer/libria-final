@@ -1,4 +1,4 @@
-Acceso a web: **https://libria-final.onrender.com/login**
+Acceso a web: **https://libria-final.onrender.com**
 
 #Para poder acceder a todo el contenido deberás **crear un usuario y contraseña** (el email no tendrá que ser real puesto que aún no le hemos añadido confirmación de usuario vía email)
 
