@@ -1823,19 +1823,70 @@ img {
     gap: 24px;
   }
 
-  .header__wrapper .cols__container .left__col {
-    max-width: 100%;
-    width: 100%;
-    padding-inline: 16px;
+  .header__wrapper .cols__container .left__col,
+  .header__wrapper .cols__container .right__col {
+    display: contents;
   }
 
-  .header__wrapper .cols__container .right__col {
+  .profile-summary {
+    order: 1;
     width: 100%;
+    padding-inline: 16px;
+    max-width: 350px;
+    margin: 0 auto;
+    padding-top: 25px;
+    text-align: center;
+    position: relative;
+  }
+
+  .profile-summary .img__container {
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .profile-summary .img__container img {
+    width: 180px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+    box-shadow: 1px 3px 12px rgba(0, 0, 0, 0.18);
+  }
+
+  .profile-summary h2 {
+    margin-top: 120px;
+  }
+
+  .profile-summary p {
+    margin: 0;
   }
 
   .reading-container {
+    order: 2;
     width: 100%;
     max-width: none;
+  }
+
+  .library-section {
+    order: 3;
+    width: 100%;
+  }
+
+  .progress-wrapper {
+    order: 4;
+    width: 100%;
+  }
+
+  .content {
+    order: 5;
+    width: 100%;
+  }
+
+  #logoutForm {
+    order: 6;
+    width: 100%;
   }
 
   .header__wrapper .cols__container .right__col nav {

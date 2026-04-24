@@ -13,7 +13,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
     />
     <!-- CSS -->
-    <link rel="stylesheet" href="styles/home.css?v=18" />
+    <link rel="stylesheet" href="styles/home.css?v=20" />
     <link rel="stylesheet" href="styles/navbar.css?v=2" />
 
      <!-- JS --> 
@@ -80,27 +80,29 @@
       
       <div class="cols__container">
         <div class="left__col">
-          <div class="img__container">
-            <img id="profileImg" src="images/perfil/chica1-02.png" alt="Imagen de perfil" />
-            <span id="editProfileIcon" class="edit-icon">&#9998;</span> <!-- Icono de edición -->
-          </div>
-          
-          <!-- Modal para elegir imagen de perfil -->
-          <div id="profileModal" class="modal-profile">
-            <div class="modal-content-profile">
-              <span class="close-modal" onclick="closeProfileModal()">&times;</span>
-              <h3>Selecciona tu imagen de perfil:</h3>
-              <div class="profile-options">
-                <img src="images/perfil/chica1-02.png" class="profile-option" alt="Perfil 1" />
-                <img src="images/perfil/chica2-02.png" class="profile-option" alt="Perfil 2" />
-                <img src="images/perfil/chico1-02.png" class="profile-option" alt="Perfil 3" />
-                <img src="images/perfil/chico2-02.png" class="profile-option" alt="Perfil 4" />
+          <div class="profile-summary">
+            <div class="img__container">
+              <img id="profileImg" src="images/perfil/chica1-02.png" alt="Imagen de perfil" />
+              <span id="editProfileIcon" class="edit-icon">&#9998;</span> <!-- Icono de edición -->
+            </div>
+            
+            <!-- Modal para elegir imagen de perfil -->
+            <div id="profileModal" class="modal-profile">
+              <div class="modal-content-profile">
+                <span class="close-modal" onclick="closeProfileModal()">&times;</span>
+                <h3>Selecciona tu imagen de perfil:</h3>
+                <div class="profile-options">
+                  <img src="images/perfil/chica1-02.png" class="profile-option" alt="Perfil 1" />
+                  <img src="images/perfil/chica2-02.png" class="profile-option" alt="Perfil 2" />
+                  <img src="images/perfil/chico1-02.png" class="profile-option" alt="Perfil 3" />
+                  <img src="images/perfil/chico2-02.png" class="profile-option" alt="Perfil 4" />
+                </div>
               </div>
             </div>
+            
+            <h2><span th:text="${username}">Usuario</span></h2>
+            <p>Lectora a tiempo completo</p>
           </div>
-          
-          <h2><span th:text="${username}">Usuario</span></h2>
-          <p>Lectora a tiempo completo</p>
           
 
 
@@ -210,68 +212,72 @@
 </div>
 
         
-          <!-- NavegaciÃ³n de categorÃ­as -->
-           <div id="biblio">
-          <h2>Mi biblioteca &#128214; </h2>
-        </div>
-          <nav>            
-            <ul>
-              <li><a href="#" id="library-link">Libros le&iacute;dos</a></li>
-              <li><a href="#" id="favorites-link">Favoritos</a></li>
-              <li><a href="#" id="upcoming-link">Pr&oacute;ximas lecturas</a></li>
-              <li><a href="#" id="reviews-link">Mis rese&ntilde;as</a></li>
-            </ul>
-          </nav>
-        
-          <!-- Contenedor donde se cambia el contenido -->
-          <div class="content-container">
-            <div id="library" class="content-section">
+          <section class="library-section">
+            <!-- NavegaciÃ³n de categorÃ­as -->
+             <div id="biblio">
+            <h2>Mi biblioteca &#128214; </h2>
+          </div>
+            <nav>            
+              <ul>
+                <li><a href="#" id="library-link">Libros le&iacute;dos</a></li>
+                <li><a href="#" id="favorites-link">Favoritos</a></li>
+                <li><a href="#" id="upcoming-link">Pr&oacute;ximas lecturas</a></li>
+                <li><a href="#" id="reviews-link">Mis rese&ntilde;as</a></li>
+              </ul>
+            </nav>
+          
+            <!-- Contenedor donde se cambia el contenido -->
+            <div class="content-container">
+              <div id="library" class="content-section">
 
-              <div class="leidos">
+                <div class="leidos">
 
-                 
- 
-              </div>
-            </div>
-        
-            <div id="favorites" class="content-section" style="display:none;">
-              <h2>Mis libros 5 &#11088;</h2>
-              <div class="favoritos">
-                
-
-                
-                <!-- Agrega  fotos o contenido dinÃ¡mico aquÃ­ -->
-              </div>
-            </div>
-        
-            <div id="upcoming" class="content-section" style="display:none;">
-              <div class="proxLecturas">
-                    
-              </div>
-              <!-- Contenido de prÃ³ximas lecturas -->
-            </div>
-        
-            <div id="reviews" class="content-section" style="display:none;">
-              <div class="resenias d-flex flex-wrap justify-content-center gap-3">
-                  <div class="resenia-card">
-                      <p>"Este libro me atrap&oacute; desde la primera p&aacute;gina. &iexcl;Incre&iacute;ble historia!"</p>
-                      <div class="resenia-autor">- El Nombre del Viento</div>
-                  </div>
-                  <div class="resenia-card">
-                      <p>"Una historia conmovedora con personajes inolvidables."</p>
-                      <div class="resenia-autor">- Cumbres Borrascosas</div>
-                  </div>
-                  <div class="resenia-card">
-                      <p>"Definitivamente lo recomendar&iacute;a a cualquier amante de la literatura."</p>
-                      <div class="resenia-autor">- Orgullo y Prejuicio</div>
-                  </div>
-                  <div class="resenia-card">
-                    <p>"Un mundo lleno de dragones, intrigas y personajes que amar&aacute;s"</p>
-                    <div class="resenia-autor">- Alas de Sangre</div>
+                   
+   
                 </div>
               </div>
-          </div>
-          </div>
+          
+              <div id="favorites" class="content-section" style="display:none;">
+                <h2>Mis libros 5 &#11088;</h2>
+                <div class="favoritos">
+                  
+
+                  
+                  <!-- Agrega  fotos o contenido dinÃ¡mico aquÃ­ -->
+                </div>
+              </div>
+          
+              <div id="upcoming" class="content-section" style="display:none;">
+                <div class="proxLecturas">
+                      
+                </div>
+                <!-- Contenido de prÃ³ximas lecturas -->
+              </div>
+          
+              <div id="reviews" class="content-section" style="display:none;">
+                <div class="resenias d-flex flex-wrap justify-content-center gap-3">
+                    <div class="resenia-card">
+                        <p>"Este libro me atrap&oacute; desde la primera p&aacute;gina. &iexcl;Incre&iacute;ble historia!"</p>
+                        <div class="resenia-autor">- El Nombre del Viento</div>
+                    </div>
+                    <div class="resenia-card">
+                        <p>"Una historia conmovedora con personajes inolvidables."</p>
+                        <div class="resenia-autor">- Cumbres Borrascosas</div>
+                    </div>
+                    <div class="resenia-card">
+                        <p>"Definitivamente lo recomendar&iacute;a a cualquier amante de la literatura."</p>
+                        <div class="resenia-autor">- Orgullo y Prejuicio</div>
+                    </div>
+                    <div class="resenia-card">
+                      <p>"Un mundo lleno de dragones, intrigas y personajes que amar&aacute;s"</p>
+                      <div class="resenia-autor">- Alas de Sangre</div>
+                  </div>
+                </div>
+            </div>
+            </div>
+          </section>
+        </div>
+      </div>
         </div>
       </div>
     </div>
