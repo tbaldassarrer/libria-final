@@ -1,6 +1,10 @@
 package es.prw.controllers;
 
 import java.security.Principal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import es.prw.dao.MySqlConnection;
 import es.prw.models.FavoriteQuote;
 import es.prw.models.User;
 import es.prw.repositories.FavoriteQuoteRepository;
@@ -215,8 +220,13 @@ public class HomeController {
     }
 
     @GetMapping("/explora")
-    public String getExplora() {
-        return "explora"; // Renderiza explora.html
+    public String getExplora(Model model) {
+        model.addAttribute("currentReads", getCommunityCurrentReads(10));
+        model.addAttribute("favoriteBooks", getCommunityFavoriteBooks(8));
+        model.addAttribute("completedBooks", getCommunityCompletedHighlights(8));
+        model.addAttribute("communityQuotes", getCommunityQuotes(8));
+        model.addAttribute("libriaPulse", getLibriaPulseStats());
+        return "explora";
     }
 
     @GetMapping("/comunidades")
@@ -292,6 +302,141 @@ public class HomeController {
         favoriteQuoteRepository.saveAll(quotes);
     }
 
+    private List<CommunityBookSummary> getCommunityCurrentReads(int limit) {
+        String sql = "SELECT l.idLibro, l.titulo, l.autor, l.cover_image, " +
+                "COUNT(DISTINCT rl.idUsuario) AS totalLectores, " +
+                "MAX(COALESCE(rl.fechaInicio, rl.fechaFin)) AS actividad " +
+                "FROM registrolectura rl " +
+                "JOIN libros l ON rl.idLibro = l.idLibro " +
+                "WHERE rl.estadoLectura = 'En progreso' " +
+                "GROUP BY l.idLibro, l.titulo, l.autor, l.cover_image " +
+                "ORDER BY actividad DESC, totalLectores DESC, l.idLibro DESC " +
+                "LIMIT ?";
+        return getAggregatedCommunityBooks(sql, limit, "current");
+    }
+
+    private List<CommunityBookSummary> getCommunityFavoriteBooks(int limit) {
+        String sql = "SELECT l.idLibro, l.titulo, l.autor, l.cover_image, " +
+                "COUNT(DISTINCT rl.idUsuario) AS totalLectores, " +
+                "MAX(COALESCE(rl.fechaFin, rl.fechaInicio)) AS actividad " +
+                "FROM registrolectura rl " +
+                "JOIN libros l ON rl.idLibro = l.idLibro " +
+                "WHERE rl.estadoLectura = 'Completado' AND rl.puntuacion = 5 " +
+                "GROUP BY l.idLibro, l.titulo, l.autor, l.cover_image " +
+                "ORDER BY totalLectores DESC, actividad DESC, l.idLibro DESC " +
+                "LIMIT ?";
+        return getAggregatedCommunityBooks(sql, limit, "favorite");
+    }
+
+    private List<CommunityBookSummary> getCommunityCompletedHighlights(int limit) {
+        String sql = "SELECT l.idLibro, l.titulo, l.autor, l.cover_image, " +
+                "COUNT(DISTINCT rl.idUsuario) AS totalLectores, " +
+                "MAX(COALESCE(rl.fechaFin, rl.fechaInicio)) AS actividad " +
+                "FROM registrolectura rl " +
+                "JOIN libros l ON rl.idLibro = l.idLibro " +
+                "WHERE rl.estadoLectura = 'Completado' AND rl.puntuacion = 5 " +
+                "GROUP BY l.idLibro, l.titulo, l.autor, l.cover_image " +
+                "ORDER BY actividad DESC, totalLectores DESC, l.idLibro DESC " +
+                "LIMIT ?";
+        return getAggregatedCommunityBooks(sql, limit, "completed");
+    }
+
+    private List<CommunityBookSummary> getAggregatedCommunityBooks(String sql, int limit, String type) {
+        List<CommunityBookSummary> books = new ArrayList<>();
+
+        try (MySqlConnection db = new MySqlConnection()) {
+            db.open();
+            Connection connection = db.connection;
+
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                ps.setInt(1, limit);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        int totalLectores = rs.getInt("totalLectores");
+                        books.add(new CommunityBookSummary(
+                                rs.getInt("idLibro"),
+                                rs.getString("titulo"),
+                                rs.getString("autor"),
+                                normalizeCover(rs.getString("cover_image")),
+                                buildCommunityMicrocopy(type, totalLectores),
+                                totalLectores));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al cargar libros agregados de comunidad: " + e.getMessage());
+        }
+
+        return books;
+    }
+
+    private String buildCommunityMicrocopy(String type, int totalLectores) {
+        if ("current".equals(type)) {
+            return totalLectores <= 1
+                    ? "Alguien lo esta leyendo ahora"
+                    : totalLectores + " lectores lo estan leyendo ahora";
+        }
+
+        if ("favorite".equals(type)) {
+            return totalLectores <= 1
+                    ? "Favorito de 1 lector"
+                    : "Favorito de " + totalLectores + " lectores";
+        }
+
+        return totalLectores <= 1
+                ? "1 lector la termino con 5 estrellas"
+                : totalLectores + " lectores la terminaron con 5 estrellas";
+    }
+
+    private List<Map<String, Object>> getCommunityQuotes(int limit) {
+        List<Map<String, Object>> quotes = new ArrayList<>();
+        favoriteQuoteRepository.findAll()
+                .stream()
+                .sorted((a, b) -> Integer.compare(
+                        b.getIdCita() == null ? 0 : b.getIdCita(),
+                        a.getIdCita() == null ? 0 : a.getIdCita()))
+                .limit(limit)
+                .forEach(quote -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("texto", quote.getTexto());
+                    item.put("obra", quote.getObra());
+                    item.put("microcopy", quotes.size() % 2 == 0
+                            ? "Guardada por un lector"
+                            : "Una frase que merece quedarse");
+                    quotes.add(item);
+                });
+        return quotes;
+    }
+
+    private LibriaPulseStats getLibriaPulseStats() {
+        return new LibriaPulseStats(
+                countRegistroLectura("SELECT COUNT(*) FROM registrolectura WHERE estadoLectura = 'En progreso'"),
+                countRegistroLectura("SELECT COUNT(*) FROM registrolectura WHERE estadoLectura = 'Completado'"),
+                countRegistroLectura("SELECT COUNT(*) FROM registrolectura WHERE estadoLectura = 'Completado' AND puntuacion = 5"),
+                Math.toIntExact(favoriteQuoteRepository.count()));
+    }
+
+    private int countRegistroLectura(String sql) {
+        try (MySqlConnection db = new MySqlConnection()) {
+            db.open();
+            Connection connection = db.connection;
+            try (PreparedStatement ps = connection.prepareStatement(sql);
+                    ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al contar actividad de Libria: " + e.getMessage());
+        }
+        return 0;
+    }
+
+    private String normalizeCover(String coverImage) {
+        return coverImage == null || coverImage.isBlank() ? "/images/portadaLibro.jpg" : coverImage;
+    }
+
     private String normalizeQuoteText(String texto) {
         if (texto == null) {
             return "";
@@ -304,6 +449,79 @@ public class HomeController {
             return "";
         }
         return obra.trim().replaceAll("\\s+", " ");
+    }
+
+    private static class CommunityBookSummary {
+        private final int idLibro;
+        private final String titulo;
+        private final String autor;
+        private final String coverImage;
+        private final String microcopy;
+        private final int totalLectores;
+
+        private CommunityBookSummary(int idLibro, String titulo, String autor, String coverImage, String microcopy,
+                int totalLectores) {
+            this.idLibro = idLibro;
+            this.titulo = titulo;
+            this.autor = autor;
+            this.coverImage = coverImage;
+            this.microcopy = microcopy;
+            this.totalLectores = totalLectores;
+        }
+
+        public int getIdLibro() {
+            return idLibro;
+        }
+
+        public String getTitulo() {
+            return titulo;
+        }
+
+        public String getAutor() {
+            return autor;
+        }
+
+        public String getCoverImage() {
+            return coverImage;
+        }
+
+        public String getMicrocopy() {
+            return microcopy;
+        }
+
+        public int getTotalLectores() {
+            return totalLectores;
+        }
+    }
+
+    private static class LibriaPulseStats {
+        private final int readingNow;
+        private final int completed;
+        private final int favorites;
+        private final int quotes;
+
+        private LibriaPulseStats(int readingNow, int completed, int favorites, int quotes) {
+            this.readingNow = readingNow;
+            this.completed = completed;
+            this.favorites = favorites;
+            this.quotes = quotes;
+        }
+
+        public int getReadingNow() {
+            return readingNow;
+        }
+
+        public int getCompleted() {
+            return completed;
+        }
+
+        public int getFavorites() {
+            return favorites;
+        }
+
+        public int getQuotes() {
+            return quotes;
+        }
     }
 
     @PostMapping("/logout")

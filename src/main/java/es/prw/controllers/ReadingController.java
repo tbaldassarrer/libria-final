@@ -93,7 +93,7 @@ public class ReadingController {
                         }
     
                         // Insertar libro con reseña
-                        String insertQuery = "INSERT INTO registrolectura (estadoLectura, fechaInicio, idLibro, idUsuario, resenia, puntuacion) VALUES ('Completado', NOW(), ?, ?, ?, ?)";
+                        String insertQuery = "INSERT INTO registrolectura (estadoLectura, fechaInicio, fechaFin, idLibro, idUsuario, resenia, puntuacion) VALUES ('Completado', NOW(), NOW(), ?, ?, ?, ?)";
                         try (PreparedStatement psInsert = connection.prepareStatement(insertQuery)) {
                             psInsert.setInt(1, idLibro);
                             psInsert.setInt(2, idUsuario);
@@ -352,70 +352,64 @@ public Map<String, Object> startReading(@RequestParam("title") String title, Pri
                  }
              }
 
-        // 3) Cerrar cualquier libro "En progreso"
-        String checkInProgressQuery = "SELECT DATE_FORMAT(fechaInicio, '%Y-%m-%d') FROM registrolectura WHERE idUsuario = ? AND idLibro = ? AND estadoLectura = 'En progreso'";
-        try (PreparedStatement psInProgressCheck = connection.prepareStatement(checkInProgressQuery)) {
-            psInProgressCheck.setInt(1, idUsuario);
-            psInProgressCheck.setInt(2, idLibro);
-            try (ResultSet rsInProgress = psInProgressCheck.executeQuery()) {
-                if (rsInProgress.next()) {
-                    response.put("success", true);
-                    response.put("reading", title + " - " + author);
-                    response.put("idLibro", idLibro);
-                    response.put("fechaInicio", rsInProgress.getString(1));
-                    return response;
+        // 3) Si ya existe cualquier registro del usuario para ese libro, reutilizar esa fila.
+        String existingEntryQuery = "SELECT estadoLectura, DATE_FORMAT(fechaInicio, '%Y-%m-%d') AS fechaInicio " +
+                "FROM registrolectura WHERE idUsuario = ? AND idLibro = ?";
+        String existingState = "";
+        try (PreparedStatement psExisting = connection.prepareStatement(existingEntryQuery)) {
+            psExisting.setInt(1, idUsuario);
+            psExisting.setInt(2, idLibro);
+            try (ResultSet rsExisting = psExisting.executeQuery()) {
+                if (rsExisting.next()) {
+                    existingState = rsExisting.getString("estadoLectura");
+                    fechaInicio = rsExisting.getString("fechaInicio");
                 }
             }
         }
 
-        // 4) Revisar si el libro ya está en "Próximas Lecturas" y pasarlo a "En progreso"
-        String updateToInProgress = 
-            "UPDATE registrolectura SET estadoLectura = 'En progreso', fechaInicio = NOW() "
-          + "WHERE idUsuario = ? AND idLibro = ? AND estadoLectura = 'Próximas Lecturas'";
-        try (PreparedStatement psInProgress = connection.prepareStatement(updateToInProgress)) {
-            psInProgress.setInt(1, idUsuario);
-            psInProgress.setInt(2, idLibro);
-            int rowsUpdated = psInProgress.executeUpdate();
-            if (rowsUpdated > 0) {
-                // Obtener la fecha de inicio recién actualizada
-                fechaInicio = "SELECT DATE_FORMAT(fechaInicio, '%Y-%m-%d') FROM registrolectura WHERE idUsuario = ? AND idLibro = ?";
-                try (PreparedStatement psFecha = connection.prepareStatement(fechaInicio)) {
-                    psFecha.setInt(1, idUsuario);
-                    psFecha.setInt(2, idLibro);
-                    try (ResultSet rsFecha = psFecha.executeQuery()) {
-                        if (rsFecha.next()) {
-                            fechaInicio = rsFecha.getString(1);
-                        }
-                    }
-                }
-            }
+        if ("En progreso".equals(existingState)) {
+            response.put("success", true);
+            response.put("reading", title + " - " + author);
+            response.put("idLibro", idLibro);
+            response.put("fechaInicio", fechaInicio != null ? fechaInicio : "");
+            return response;
         }
 
-        // 5) Si el libro no estaba en "Próximas Lecturas", insertarlo como "En progreso"
-        if (fechaInicio.isEmpty()) {
-            String insertQuery = 
-                "INSERT INTO registrolectura (estadoLectura, fechaInicio, idLibro, idUsuario) "
-              + "VALUES ('En progreso', NOW(), ?, ?)";
+        // 4) Si existe una fila previa no completada, la actualizamos a "En progreso".
+        if (!existingState.isEmpty()) {
+            String updateToInProgress =
+                    "UPDATE registrolectura SET estadoLectura = 'En progreso', fechaInicio = NOW(), fechaFin = NULL, resenia = NULL, puntuacion = NULL " +
+                    "WHERE idUsuario = ? AND idLibro = ?";
+            try (PreparedStatement psInProgress = connection.prepareStatement(updateToInProgress)) {
+                psInProgress.setInt(1, idUsuario);
+                psInProgress.setInt(2, idLibro);
+                psInProgress.executeUpdate();
+            }
+        } else {
+            // 5) Si no existía ninguna fila, la insertamos.
+            String insertQuery =
+                    "INSERT INTO registrolectura (estadoLectura, fechaInicio, idLibro, idUsuario) " +
+                    "VALUES ('En progreso', NOW(), ?, ?)";
             try (PreparedStatement psInsert = connection.prepareStatement(insertQuery)) {
                 psInsert.setInt(1, idLibro);
                 psInsert.setInt(2, idUsuario);
                 psInsert.executeUpdate();
             }
+        }
 
-            // Obtener la fecha recién insertada
-            fechaInicio = "SELECT DATE_FORMAT(fechaInicio, '%Y-%m-%dT00:00:00') FROM registrolectura WHERE idUsuario = ? AND idLibro = ?";
-            try (PreparedStatement psFecha = connection.prepareStatement(fechaInicio)) {
-                psFecha.setInt(1, idUsuario);
-                psFecha.setInt(2, idLibro);
-                try (ResultSet rsFecha = psFecha.executeQuery()) {
-                    if (rsFecha.next()) {
-                        fechaInicio = rsFecha.getString(1);
-                    }
+        // 6) Obtener la fecha actual del registro ya consolidado.
+        String fechaQuery = "SELECT DATE_FORMAT(fechaInicio, '%Y-%m-%d') FROM registrolectura WHERE idUsuario = ? AND idLibro = ?";
+        try (PreparedStatement psFecha = connection.prepareStatement(fechaQuery)) {
+            psFecha.setInt(1, idUsuario);
+            psFecha.setInt(2, idLibro);
+            try (ResultSet rsFecha = psFecha.executeQuery()) {
+                if (rsFecha.next()) {
+                    fechaInicio = rsFecha.getString(1);
                 }
             }
         }
 
-        // 6) Retornar datos actualizados
+        // 7) Retornar datos actualizados
         response.put("success", true);
         response.put("reading", title + " - " + author);
         response.put("idLibro", idLibro);

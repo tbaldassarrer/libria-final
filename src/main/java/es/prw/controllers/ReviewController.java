@@ -65,6 +65,44 @@ public class ReviewController {
         return reviews;
     }
 
+    @GetMapping("/communityReviews")
+    @ResponseBody
+    public List<Map<String, String>> getCommunityReviewsByBook(@RequestParam("idLibro") int idLibro) {
+        List<Map<String, String>> reviews = new ArrayList<>();
+
+        try (MySqlConnection db = new MySqlConnection()) {
+            db.open();
+            Connection connection = db.connection;
+
+            String sql = "SELECT u.nombre_usuario, rl.resenia, rl.puntuacion, " +
+                    "DATE_FORMAT(COALESCE(rl.fechaFin, rl.fechaInicio), '%d/%m/%Y') AS fechaActividad " +
+                    "FROM registrolectura rl " +
+                    "JOIN usuariolector u ON rl.idUsuario = u.id_usuario " +
+                    "WHERE rl.idLibro = ? AND rl.estadoLectura = 'Completado' " +
+                    "AND rl.resenia IS NOT NULL AND TRIM(rl.resenia) <> '' " +
+                    "ORDER BY COALESCE(rl.fechaFin, rl.fechaInicio) DESC";
+
+            try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                ps.setInt(1, idLibro);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        Map<String, String> review = new HashMap<>();
+                        review.put("usuario", rs.getString("nombre_usuario"));
+                        review.put("resenia", rs.getString("resenia"));
+                        review.put("puntuacion", rs.getString("puntuacion"));
+                        review.put("fecha", rs.getString("fechaActividad"));
+                        reviews.add(review);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al obtener las resenas publicas del libro: " + e.getMessage());
+        }
+
+        return reviews;
+    }
+
     @PostMapping("/deleteReview")
     @ResponseBody
     public Map<String, Object> deleteReview(@RequestParam("idLibro") int idLibro, Principal principal) {

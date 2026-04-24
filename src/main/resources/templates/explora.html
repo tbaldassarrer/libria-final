@@ -3,106 +3,147 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Libria - Explora</title>
-    <link rel="stylesheet" href="styles/explora.css?v=7" />
+  <meta name="_csrf" th:content="${_csrf.token}" />
+  <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+  <title>Libria Hoy</title>
+  <link rel="stylesheet" href="styles/explora.css?v=13" />
   <link rel="stylesheet" href="styles/navbar.css?v=2" />
+  <link rel="stylesheet" href="styles/book-popup.css?v=1" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 
   <div th:replace="~{fragments/navbar :: siteNavbar}"></div>
+  <div th:replace="~{fragments/book-popup :: bookPopup}"></div>
 
-  <main>
-    <section id="dynamic-books">
-      <h1 class="section-title page-title">
-        <svg class="title-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-          <path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z" />
-          <path d="M8 6h8" />
-        </svg>
-        Descubre los libros mejor puntuados por g&eacute;nero
-      </h1>
+  <main class="libria-today-page">
+    <section class="libria-today-hero">
+      <p class="libria-today-eyebrow">Actividad en comunidad</p>
+      <h1>Ahora en Libria</h1>
+      <p class="libria-today-subtitle">La actividad lectora de la comunidad, en tiempo real.</p>
+    </section>
 
-      <div id="fantasy" class="genre-section">
-        <h2 class="section-title genre-title">
-          <svg class="title-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="m11 3 2.4 5.2L19 10.6l-5.1 2.6L11.4 19 8.8 13.4 3 11l5.5-2.6L11 3z" />
-            <path d="m18 3 .8 1.7L20.5 5.5l-1.7.8L18 8l-.8-1.7-1.7-.8 1.7-.8L18 3z" />
-          </svg>
-          Fantas&iacute;a
-        </h2>
-        <div class="books-container" id="fantasy-books"></div>
+    <section class="libria-pulse" th:if="${libriaPulse != null}">
+      <h2 class="sr-only">El pulso de Libria</h2>
+      <p class="libria-pulse__band">
+        <span class="libria-pulse__item">&#128214; <strong th:text="${libriaPulse.readingNow}">0</strong> lecturas en curso</span>
+        <span class="libria-pulse__separator">&middot;</span>
+        <span class="libria-pulse__item">&#9989; <strong th:text="${libriaPulse.completed}">0</strong> libros terminados</span>
+        <span class="libria-pulse__separator">&middot;</span>
+        <span class="libria-pulse__item">&#10084;&#65039; <strong th:text="${libriaPulse.favorites}">0</strong> favoritos</span>
+        <span class="libria-pulse__separator">&middot;</span>
+        <span class="libria-pulse__item">&#128172; <strong th:text="${libriaPulse.quotes}">0</strong> citas guardadas</span>
+      </p>
+    </section>
+
+    <section class="community-section community-section--featured">
+      <div class="community-block__header">
+        <h2>Lo est&aacute;n leyendo ahora</h2>
+        <p>Lectores que han empezado nuevas historias hoy.</p>
       </div>
 
-      <div id="romance" class="genre-section">
-        <h2 class="section-title genre-title">
-          <svg class="title-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z" />
-          </svg>
-          Romance
-        </h2>
-        <div class="books-container" id="romance-books"></div>
+      <div class="community-carousel-shell" th:if="${!#lists.isEmpty(currentReads)}">
+        <button type="button" class="community-carousel__nav community-carousel__nav--prev" aria-label="Desplazar a la izquierda">&lsaquo;</button>
+        <div class="community-carousel" id="currentReadsCarousel">
+          <article class="community-card community-card--featured js-community-book"
+                   th:each="book : ${currentReads}"
+                   th:attr="data-book-id=${book.idLibro},data-book-title=${book.titulo},data-book-author=${book.autor},data-book-cover=${book.coverImage}">
+            <img th:src="${book.coverImage}" th:alt="${'Portada de ' + book.titulo}">
+            <div class="community-card__body">
+              <span class="community-card__tag" th:text="${book.microcopy}">Alguien lo esta leyendo ahora</span>
+              <h3 th:text="${book.titulo}">Titulo</h3>
+              <p th:text="${book.autor}">Autor</p>
+            </div>
+          </article>
+        </div>
+        <button type="button" class="community-carousel__nav community-carousel__nav--next" aria-label="Desplazar a la derecha">&rsaquo;</button>
       </div>
 
-      <div id="science_fiction" class="genre-section">
-        <h2 class="section-title genre-title">
-          <svg class="title-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="4" />
-            <path d="M3 12c3-5 15-5 18 0" />
-            <path d="M3 12c3 5 15 5 18 0" />
-            <path d="M12 2v2" />
-            <path d="M12 20v2" />
-          </svg>
-          Ciencia ficci&oacute;n
-        </h2>
-        <div class="books-container" id="science_fiction-books"></div>
+      <div class="community-empty" th:if="${#lists.isEmpty(currentReads)}">
+        A&uacute;n no hay lecturas en curso. Empieza una y da vida a Libria.
       </div>
+    </section>
 
-      <div id="mystery" class="genre-section">
-        <h2 class="section-title genre-title">
-          <svg class="title-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="11" cy="11" r="7" />
-            <path d="m16.5 16.5 4.5 4.5" />
-            <path d="M9.5 8.5a2.5 2.5 0 0 1 4 2c0 2-2.5 2.2-2.5 4" />
-            <path d="M11 18h.01" />
-          </svg>
-          Misterio
-        </h2>
-        <div class="books-container" id="mystery-books"></div>
+    <section class="libria-columns">
+      <section class="community-section community-section--compact">
+        <div class="community-block__header">
+          <h2>Libros que est&aacute;n enamorando</h2>
+          <p>Historias que los lectores no quieren soltar.</p>
+        </div>
+        <div class="community-grid community-grid--stacked" th:if="${!#lists.isEmpty(favoriteBooks)}">
+          <article class="community-card community-card--compact js-community-book"
+                   th:each="book : ${favoriteBooks}"
+                   th:attr="data-book-id=${book.idLibro},data-book-title=${book.titulo},data-book-author=${book.autor},data-book-cover=${book.coverImage}">
+            <img th:src="${book.coverImage}" th:alt="${'Portada de ' + book.titulo}">
+            <div class="community-card__body">
+              <span class="community-card__tag" th:text="${book.microcopy}">Favorito de 1 lector</span>
+              <h3 th:text="${book.titulo}">Titulo</h3>
+              <p th:text="${book.autor}">Autor</p>
+            </div>
+          </article>
+        </div>
+        <div class="community-empty" th:if="${#lists.isEmpty(favoriteBooks)}">
+          Todav&iacute;a nadie ha marcado favoritos. S&eacute; la primera.
+        </div>
+      </section>
+
+      <section class="community-section community-section--compact">
+        <div class="community-block__header">
+          <h2>Lecturas que han dejado huella</h2>
+          <p>Libros que ya han sido vividos hasta el final.</p>
+        </div>
+        <div class="community-grid community-grid--stacked" th:if="${!#lists.isEmpty(completedBooks)}">
+          <article class="community-card community-card--compact js-community-book"
+                   th:each="book : ${completedBooks}"
+                   th:attr="data-book-id=${book.idLibro},data-book-title=${book.titulo},data-book-author=${book.autor},data-book-cover=${book.coverImage}">
+            <img th:src="${book.coverImage}" th:alt="${'Portada de ' + book.titulo}">
+            <div class="community-card__body">
+              <span class="community-card__tag" th:text="${book.microcopy}">1 lector la termino con 5 estrellas</span>
+              <h3 th:text="${book.titulo}">Titulo</h3>
+              <p th:text="${book.autor}">Autor</p>
+            </div>
+          </article>
+        </div>
+        <div class="community-empty" th:if="${#lists.isEmpty(completedBooks)}">
+          A&uacute;n no hay lecturas terminadas. Todo empieza con una primera p&aacute;gina.
+        </div>
+      </section>
+    </section>
+
+    <section class="community-section community-section--quotes">
+      <div class="community-block__header">
+        <h2>Citas que se quedan contigo</h2>
+        <p>Fragmentos que los lectores han querido guardar.</p>
       </div>
-
-      <div id="history" class="genre-section">
-        <h2 class="section-title genre-title">
-          <svg class="title-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M7 3h11a2 2 0 0 1 2 2v16H7a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3z" />
-            <path d="M7 3v18" />
-            <path d="M10 8h6" />
-            <path d="M10 12h6" />
-          </svg>
-          Historia
-        </h2>
-        <div class="books-container" id="history-books"></div>
+      <div class="quotes-grid" th:if="${!#lists.isEmpty(communityQuotes)}">
+        <article class="quote-card" th:each="quote : ${communityQuotes}">
+          <span class="quote-card__tag" th:text="${quote.microcopy}">Guardada por un lector</span>
+          <p class="quote-card__text">
+            &ldquo;<span th:text="${quote.texto}">Texto</span>&rdquo;
+          </p>
+          <p class="quote-card__work">- <span th:text="${quote.obra}">Obra</span></p>
+        </article>
+      </div>
+      <div class="community-empty" th:if="${#lists.isEmpty(communityQuotes)}">
+        Todav&iacute;a no hay citas guardadas. Encuentra una que te marque.
       </div>
     </section>
   </main>
 
-  <div class="explora-modal-overlay" id="exploraBookModal" aria-hidden="true">
-    <div class="explora-modal" role="dialog" aria-modal="true" aria-labelledby="exploraModalTitle">
-      <button type="button" class="explora-modal-close" id="closeExploraModal" aria-label="Cerrar">&times;</button>
-      <div class="explora-modal-body">
-        <img id="exploraModalCover" class="explora-modal-cover" src="/images/portadaLibro.jpg" alt="">
-        <div class="explora-modal-info">
-          <h2 id="exploraModalTitle"></h2>
-          <p><strong>Autor:</strong> <span id="exploraModalAuthor"></span></p>
-          <p><strong>G&eacute;nero:</strong> <span id="exploraModalGenre"></span></p>
-          <p><strong>A&ntilde;o de edici&oacute;n:</strong> <span id="exploraModalYear"></span></p>
-          <p><strong>Puntuaci&oacute;n:</strong> <span id="exploraModalRating"></span></p>
+  <div id="communityReviewsModal" class="community-reviews-modal" aria-hidden="true">
+    <div class="community-reviews-modal__backdrop"></div>
+    <div class="community-reviews-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="communityReviewsTitle">
+      <button type="button" class="community-reviews-modal__close" aria-label="Cerrar comentarios">&times;</button>
+      <div class="community-reviews-modal__summary">
+        <img id="communityReviewsCover" src="/images/portadaLibro.jpg" alt="Portada del libro">
+        <div class="community-reviews-modal__meta">
+          <p class="community-reviews-modal__eyebrow">Comentarios de lectores</p>
+          <h2 id="communityReviewsTitle">Libro</h2>
+          <p id="communityReviewsAuthor">Autora</p>
         </div>
       </div>
-      <div class="explora-modal-synopsis">
-        <h3>Sinopsis</h3>
-        <p id="exploraModalDescription"></p>
-      </div>
+      <div id="communityReviewsList" class="community-reviews-list"></div>
     </div>
   </div>
 
@@ -128,7 +169,8 @@
   </footer>
 
   <script src="/js/navbar.js?v=2"></script>
-  <script src="/js/book.js?v=9"></script>
-  <script src="/js/explora.js"></script>
+  <script src="/js/book.js?v=10"></script>
+  <script src="/js/reading.js?v=11"></script>
+  <script src="/js/explora.js?v=3"></script>
 </body>
 </html>

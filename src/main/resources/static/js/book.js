@@ -218,11 +218,6 @@ document.addEventListener("DOMContentLoaded", function () {
           bookList.style.display = "none";
           bookList.innerHTML = "";
 
-          if (!popupWindow) {
-            window.location.href = `/home?bookTitle=${encodeURIComponent(data.titulo || bookTitle)}`;
-            return;
-          }
-
           document.getElementById("bookTitle").textContent = data.titulo;
           document.getElementById("bookAuthor").textContent = data.autor;
           document.getElementById("bookGenre").textContent = data.genero;

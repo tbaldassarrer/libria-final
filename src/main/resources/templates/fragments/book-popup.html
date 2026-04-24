@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <div th:fragment="bookPopup">
+      <div class="overlay"></div>
+      <div id="popupWindow" class="popup">
+        <div class="popup-content">
+          <span class="close-popup">&times;</span>
+
+          <div class="popup-details">
+            <img id="bookCover" src="" alt="Portada del libro" class="book-cover" />
+            <div class="book-info">
+              <h2 id="bookTitle"></h2>
+              <p><strong>Autor:</strong> <span id="bookAuthor"></span></p>
+              <p><strong>G&eacute;nero:</strong> <span id="bookGenre"></span></p>
+              <p><strong>A&ntilde;o de Edici&oacute;n:</strong> <span id="bookYear"></span></p>
+              <p><strong>Puntuaci&oacute;n:</strong> <span id="bookRating"></span> &#11088;</p>
+            </div>
+            <div class="book-actions">
+              <button class="btn-action" type="button" data-book-action="library">A&ntilde;adir a libros le&iacute;dos</button>
+              <button class="btn-action" type="button" data-book-action="reading">Comenzar a leer</button>
+              <button class="btn-action" type="button" data-book-action="upcoming">A&ntilde;adir a pr&oacute;ximas lecturas</button>
+            </div>
+          </div>
+
+          <div class="book-synopsis">
+            <p><strong>Sinopsis:</strong></p>
+            <p id="bookSynopsis"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

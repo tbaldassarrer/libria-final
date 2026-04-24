@@ -14,13 +14,14 @@
     />
     <!-- CSS -->
     <link rel="stylesheet" href="styles/home.css?v=20" />
+    <link rel="stylesheet" href="styles/book-popup.css?v=1" />
     <link rel="stylesheet" href="styles/navbar.css?v=2" />
 
      <!-- JS --> 
     
     <script src="js/home.js?v=5"></script>
     <script src="js/book.js?v=9"></script>
-    <script src="js/reading.js?v=8"></script>
+    <script src="js/reading.js?v=11"></script>
     <script src="js/review.js?v=4"></script>
     <script src="js/user.js?v=4"></script>
     <script src="js/favorites.js?v=4"></script>
@@ -32,37 +33,7 @@
 
     <div th:replace="~{fragments/navbar :: siteNavbar}"></div>
 
-  <!-- Ventana emergente -->
-  <div class="overlay"></div>
-<div id="popupWindow" class="popup">
-  <div class="popup-content">
-    <span class="close-popup">&times;</span>
-    
-    <div class="popup-details">
-      <img id="bookCover" src="" alt="Portada del libro" class="book-cover" />
-      <div class="book-info">
-        <h2 id="bookTitle"></h2>
-        <p><strong>Autor:</strong> <span id="bookAuthor"></span></p>
-        <p><strong>G&eacute;nero:</strong> <span id="bookGenre"></span></p>
-        <p><strong>A&ntilde;o de Edici&oacute;n:</strong> <span id="bookYear"></span></p>
-        <p><strong>Puntuaci&oacute;n:</strong> <span id="bookRating"></span> &#11088;</p>
-      </div>
-      <div class="book-actions">
-        <button class="btn-action" onclick="addToLibrary(document.getElementById('bookTitle').textContent)">A&ntilde;adir a libros le&iacute;dos</button>
-        <button class="btn-action">Comenzar a leer</button>
-        <button class="btn-action" onclick="addToUpcomingReads(document.getElementById('bookTitle').textContent, document.getElementById('bookCover').src)">A&ntilde;adir a pr&oacute;ximas lecturas</button>
-
-      </div>
-    </div>
-
-    <div class="book-synopsis">
-      <p><strong>Sinopsis:</strong></p>
-      <p id="bookSynopsis"></p>
-    </div>
-    <!-- Contenedor de botones alineados a la derecha -->
-  
-  </div>
-</div>
+  <div th:replace="~{fragments/book-popup :: bookPopup}"></div>
 
 
     <div class="header__wrapper">
