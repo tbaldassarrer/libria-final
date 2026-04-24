@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <div th:fragment="siteNavbar" class="barra_superior">
+      <a th:href="@{/home}">
+        <img src="/images/libriapeq.png" alt="img Libria" class="img-libria" />
+      </a>
+
+      <button
+        type="button"
+        class="navbar-toggle"
+        aria-expanded="false"
+        aria-label="Abrir menu de navegacion"
+      >
+        <i class="fa-solid fa-bars"></i>
+      </button>
+
+      <div class="barra_superior__panel">
+        <nav>
+          <ul>
+            <li><a th:href="@{/home}">Home</a></li>
+            <li><a th:href="@{/explora}">Explora</a></li>
+            <li><a th:href="@{/comunidades}">Reading Journal</a></li>
+            <li><a th:href="@{/contacto}">Contacto</a></li>
+          </ul>
+        </nav>
+
+        <form class="search-bar" onsubmit="return false;">
+          <input type="text" id="searchBook" placeholder="Buscar un libro..." />
+          <button type="submit" id="searchButton">
+            <i class="fas fa-search"></i>
+          </button>
+          <ul id="bookList" class="list-group"></ul>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

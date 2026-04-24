@@ -4,25 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Libria - Explora</title>
-  <link rel="stylesheet" href="styles/explora.css?v=3" />
+    <link rel="stylesheet" href="styles/explora.css?v=7" />
+  <link rel="stylesheet" href="styles/navbar.css?v=2" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
 </head>
 <body>
 
-  <div class="barra_superior">
-    <a th:href="@{/home}"><img src="images/libriapeq.png" alt="img Libria" class="img-libria"></a>
-    <nav>
-      <ul>
-        <li><a id="btnExplora" th:href="@{/explora}">Explora</a></li>
-        <li><a id="btnComunidades" th:href="@{/comunidades}">Comunidades</a></li>
-        <li><a th:href="@{/contacto}">Contacto</a></li>
-      </ul>
-    </nav>
-    <form class="search-bar" onsubmit="return false;">
-      <input type="text" id="searchBook" placeholder="Buscar un libro..." />
-      <button type="submit" id="searchButton"><i class="fas fa-search"></i></button>
-      <ul id="bookList" class="list-group"></ul>
-    </form>
-  </div>
+  <div th:replace="~{fragments/navbar :: siteNavbar}"></div>
 
   <main>
     <section id="dynamic-books">
@@ -32,7 +20,7 @@
           <path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z" />
           <path d="M8 6h8" />
         </svg>
-        Descubre los libros mejor puntuados por género
+        Descubre los libros mejor puntuados por g&eacute;nero
       </h1>
 
       <div id="fantasy" class="genre-section">
@@ -41,7 +29,7 @@
             <path d="m11 3 2.4 5.2L19 10.6l-5.1 2.6L11.4 19 8.8 13.4 3 11l5.5-2.6L11 3z" />
             <path d="m18 3 .8 1.7L20.5 5.5l-1.7.8L18 8l-.8-1.7-1.7-.8 1.7-.8L18 3z" />
           </svg>
-          Fantasía
+          Fantas&iacute;a
         </h2>
         <div class="books-container" id="fantasy-books"></div>
       </div>
@@ -65,7 +53,7 @@
             <path d="M12 2v2" />
             <path d="M12 20v2" />
           </svg>
-          Ciencia Ficción
+          Ciencia ficci&oacute;n
         </h2>
         <div class="books-container" id="science_fiction-books"></div>
       </div>
@@ -106,9 +94,9 @@
         <div class="explora-modal-info">
           <h2 id="exploraModalTitle"></h2>
           <p><strong>Autor:</strong> <span id="exploraModalAuthor"></span></p>
-          <p><strong>Género:</strong> <span id="exploraModalGenre"></span></p>
-          <p><strong>Año de Edición:</strong> <span id="exploraModalYear"></span></p>
-          <p><strong>Puntuación:</strong> <span id="exploraModalRating"></span></p>
+          <p><strong>G&eacute;nero:</strong> <span id="exploraModalGenre"></span></p>
+          <p><strong>A&ntilde;o de edici&oacute;n:</strong> <span id="exploraModalYear"></span></p>
+          <p><strong>Puntuaci&oacute;n:</strong> <span id="exploraModalRating"></span></p>
         </div>
       </div>
       <div class="explora-modal-synopsis">
@@ -118,11 +106,28 @@
     </div>
   </div>
 
-  <footer class="footer">
-    <p>© 2024 Libria. Todos los derechos reservados.</p>
+  <footer class="site-footer">
+    <div class="site-footer__inner">
+      <p class="site-footer__copy">&copy; 2026 Libria. Todos los derechos reservados.</p>
+      <div class="site-footer__socials" aria-label="Redes sociales">
+        <span class="footer-social" aria-label="Instagram" role="img">
+          <i class="fab fa-instagram"></i>
+        </span>
+        <span class="footer-social" aria-label="Twitter" role="img">
+          <i class="fab fa-twitter"></i>
+        </span>
+        <span class="footer-social" aria-label="Facebook" role="img">
+          <i class="fab fa-facebook-f"></i>
+        </span>
+        <a class="footer-social" th:href="@{/contacto}" aria-label="Ir a contacto por email">
+          <i class="fa-solid fa-envelope"></i>
+        </a>
+      </div>
+      <p class="site-footer__creators">Creadoras: Tatiana Baldassarre y Yesenia Rosales</p>
+    </div>
   </footer>
 
-  <script src="/js/navbar.js?v=1"></script>
+  <script src="/js/navbar.js?v=2"></script>
   <script src="/js/book.js?v=9"></script>
   <script src="/js/explora.js"></script>
 </body>

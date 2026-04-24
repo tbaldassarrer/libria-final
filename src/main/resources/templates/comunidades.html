@@ -4,128 +4,286 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Comunidades Libria</title>
-    <!-- Font Awesome -->
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    <title>My Reading Journal</title>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
     />
-    <!-- CSS -->
-    <link rel="stylesheet" href="styles/comunidades.css?v=3" />
+    <link rel="stylesheet" href="styles/comunidades.css?v=13" />
+    <link rel="stylesheet" href="styles/navbar.css?v=2" />
+  </head>
+  <body class="reading-journal-body">
+    <div th:replace="~{fragments/navbar :: siteNavbar}"></div>
 
-
-     </head>
-     <body>
-      <div class="barra_superior">
-        <a th:href="@{/home}"><img src="images/libriapeq.png" alt="img Libria" class="img-libria"></a>
-        <nav>
-            <ul>
-                <li><a id="btnExplora" th:href="@{/explora}">Explora</a></li>
-                <li><a id="btnComunidades" th:href="@{/comunidades}">Comunidades</a></li>  
-                <li><a th:href="@{/contacto}">Contacto</a></li>          
-        
-              </ul>
-        </nav>
-        <form class="search-bar" onsubmit="return false;">
-            <input type="text" id="searchBook" placeholder="Buscar un libro..." />
-            <button type="submit" id="searchButton"><i class="fas fa-search"></i></button>
-            <ul id="bookList" class="list-group"></ul>
-        </form>
-      </div>
-        <div class="container">
-          <h1>Comunidades</h1>
-          <div class="clubs">
-            <!-- Club existente: Fantasía -->
-            <div class="club-card">
-              <h2>🐉 Fantasía 🐉</h2>
-              <div class="divisor"></div>
-              <p>Únete a un mundo mágico lleno de aventuras y criaturas fantásticas.</p>
-              <button>Solicitar unirme</button>
-            </div>
-            <!-- Club existente: Romance -->
-            <div class="club-card">
-              <h2>💘 Romance 💘</h2>
-              <div class="divisor"></div>
-              <p>Comparte historias de amor sano y pasión en cada página.</p>
-              <button>Solicitar unirme</button>
-            </div>
-            <!-- Club existente: Thriller -->
-            <div class="club-card">
-              <h2>🕵️‍♂️ Thriller 🕵️‍♂️</h2>
-              <div class="divisor"></div>
-              <p>Sumérgete en tramas llenas de suspense, intriga y misterio.</p>
-              <button>Solicitar unirme</button>
-            </div>
-            <!-- Club existente: Dark Romance -->
-            <div class="club-card">
-              <h2>🖤 Dark Romance 🖤</h2>
-              <div class="divisor"></div>
-              <p>Explora relaciones intensas y misteriosas en un ambiente oscuro y seductor.</p>
-              <button>Solicitar unirme</button>
-            </div>
-            <!-- Club existente: Romantasy -->
-            <div class="club-card">
-              <h2>💖 Romantasy 💖</h2>
-              <div class="divisor"></div>
-              <p>Donde el romance se fusiona con la fantasía para crear historias únicas.</p>
-              <button>Solicitar unirme</button>
-            </div>
-            <!-- Club existente: Terror -->
-            <div class="club-card">
-              <h2>👻 Terror 👻</h2>
-              <div class="divisor"></div>
-              <p>Vive emociones intensas y relatos escalofriantes que te pondrán los pelos de punta.</p>
-              <button>Solicitar unirme</button>
-            </div>
-            <!-- Club existente: Autoayuda -->
-            <div class="club-card">
-              <h2>🌟 Autoayuda 🌟</h2>
-              <div class="divisor"></div>
-              <p>Aprende técnicas y consejos para mejorar tu vida personal y profesional.</p>
-              <button>Solicitar unirme</button>
-            </div>
-            <!-- Club existente: Poesía -->
-            <div class="club-card">
-              <h2>🌹 Poesía 🌹</h2>
-              <div class="divisor"></div>
-              <p>Sumérgete en versos y rimas que despiertan emociones profundas y reflexiones.</p>
-              <button>Solicitar unirme</button>
-            </div>
-            
-            <!-- Nuevas Comunidades (clubs de lectura) -->
-            <!-- Club 9: Café y Letras -->
-            <div class="club-card">
-              <h2>☕ Café y Letras ☕</h2>
-              <div class="divisor"></div>
-              <p>Comparte tus lecturas favoritas y debates literarios mientras disfrutas de un buen café.</p>
-              <button>Solicitar unirme</button>
-            </div>
-            <!-- Club 10: Conexión Lectores -->
-            <div class="club-card">
-              <h2>🔗 ConnectBooks 🔗</h2>
-              <div class="divisor"></div>
-              <p>Únete para conectar con otros apasionados de la lectura y compartir recomendaciones.</p>
-              <button>Solicitar unirme</button>
-            </div>
-            <!-- Club 11: Café, Letras y Plática -->
-            <div class="club-card">
-              <h2>📚 Free-Spoilers 📚</h2>
-              <div class="divisor"></div>
-              <p>Un espacio para charlar sobre libros y disfrutar de encuentros literarios sin spoilers.</p>
-              <button>Solicitar unirme</button>
-            </div>
-            <!-- Club 12: Rincón de Lectores -->
-            <div class="club-card">
-              <h2>📖 Tú rincón 📖</h2>
-              <div class="divisor"></div>
-              <p>Descubre un rincón especial para debatir, descubrir y disfrutar nuevas lecturas junto a otros lectores.</p>
-              <button>Solicitar unirme</button>
-            </div>
+    <main class="journal-page">
+      <section class="journal-sheet">
+        <header class="journal-header">
+          <div class="journal-header__title">
+            <p class="journal-eyebrow">My Reading Journal</p>
+            <h1>My Reading Journal</h1>
           </div>
-          
-        </div>
-        <script src="js/navbar.js?v=1"></script>
-        <script src="js/book.js?v=9"></script>
-      </body>
+          <div class="journal-header__actions">
+            <p class="journal-subtitle">
+              Guarda cada rese&ntilde;a con todos sus detalles y recup&eacute;rala cuando quieras.
+            </p>
+            <span id="journalSaveStatus" class="journal-save-status">Completa la ficha y gu&aacute;rdala</span>
+          </div>
+        </header>
 
-    </html>
+        <section class="journal-layout">
+          <form id="readingJournalForm" class="journal-form" autocomplete="off">
+            <input type="hidden" id="journalId" />
+            <input type="hidden" id="generalRating" value="0" />
+            <input type="hidden" id="romanceRating" value="0" />
+            <input type="hidden" id="spiceRating" value="0" />
+            <input type="hidden" id="sadnessRating" value="0" />
+            <input type="hidden" id="plotRating" value="0" />
+            <input type="hidden" id="charactersRating" value="0" />
+            <input type="hidden" id="styleRating" value="0" />
+            <input type="hidden" id="endingRating" value="0" />
+
+            <section class="journal-top">
+              <div class="cover-panel">
+                <div class="cover-placeholder" id="coverPreview">
+                  <span>Portada aqu&iacute;</span>
+                </div>
+                <label class="cover-upload" for="journalCover">Subir portada</label>
+                <input id="journalCover" type="file" accept="image/*" />
+                <div class="quick-stars" aria-label="Valoraci&oacute;n general" data-rating-group="general">
+                  <button type="button" data-value="1">&#9734;</button>
+                  <button type="button" data-value="2">&#9734;</button>
+                  <button type="button" data-value="3">&#9734;</button>
+                  <button type="button" data-value="4">&#9734;</button>
+                  <button type="button" data-value="5">&#9734;</button>
+                </div>
+              </div>
+
+              <div class="journal-meta">
+                <div class="meta-grid meta-grid--wide">
+                  <label class="field">
+                    <span>T&iacute;tulo</span>
+                    <input id="titulo" type="text" placeholder="Escribe el t&iacute;tulo" />
+                  </label>
+                  <label class="field">
+                    <span>Autor o autora</span>
+                    <input id="autor" type="text" placeholder="Nombre del autor o autora" />
+                  </label>
+                </div>
+
+                <div class="meta-grid meta-grid--formats">
+                  <label class="field field--small">
+                    <span>P&aacute;ginas</span>
+                    <input id="paginas" type="number" min="1" placeholder="000" />
+                  </label>
+
+                  <div class="field field--format-group">
+                    <span>Formato</span>
+                    <div class="format-options">
+                      <label class="format-option">
+                        <input type="radio" name="formato" value="Papel" checked />
+                        <span><i class="fa-solid fa-book-open"></i> Papel</span>
+                      </label>
+                      <label class="format-option">
+                        <input type="radio" name="formato" value="Digital" />
+                        <span><i class="fa-solid fa-tablet-screen-button"></i> Digital</span>
+                      </label>
+                      <label class="format-option">
+                        <input type="radio" name="formato" value="Movil" />
+                        <span><i class="fa-solid fa-mobile-screen-button"></i> M&oacute;vil</span>
+                      </label>
+                      <label class="format-option">
+                        <input type="radio" name="formato" value="Audio" />
+                        <span><i class="fa-solid fa-headphones-simple"></i> Audio</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="meta-grid">
+                  <label class="field">
+                    <span>Fecha de inicio</span>
+                    <input id="fechaInicio" type="date" />
+                  </label>
+                  <label class="field">
+                    <span>Fecha final</span>
+                    <input id="fechaFin" type="date" />
+                  </label>
+                </div>
+              </div>
+            </section>
+
+            <section class="journal-block">
+              <h2>C&oacute;mo me hizo sentir este libro</h2>
+              <div class="feelings-grid">
+                <label class="feeling-option"><input type="radio" name="feelingOption" value="Me encanto de principio a fin." /><span>Me encant&oacute; de principio a fin.</span></label>
+                <label class="feeling-option"><input type="radio" name="feelingOption" value="Sensaciones mixtas, tirando a negativas." /><span>Sensaciones mixtas, tirando a negativas.</span></label>
+                <label class="feeling-option"><input type="radio" name="feelingOption" value="Casi perfecto, le falto un detalle." /><span>Casi perfecto, le falt&oacute; un detalle.</span></label>
+                <label class="feeling-option"><input type="radio" name="feelingOption" value="No me compenso el esfuerzo." /><span>No me compens&oacute; el esfuerzo.</span></label>
+                <label class="feeling-option"><input type="radio" name="feelingOption" value="Lo disfrute muchisimo." /><span>Lo disfrut&eacute; much&iacute;simo.</span></label>
+                <label class="feeling-option"><input type="radio" name="feelingOption" value="Me costo y estuve a punto de dejarlo." /><span>Me cost&oacute; y estuve a punto de dejarlo.</span></label>
+                <label class="feeling-option"><input type="radio" name="feelingOption" value="Entretenido, pero no inolvidable." /><span>Entretenido, pero no inolvidable.</span></label>
+                <label class="feeling-option"><input type="radio" name="feelingOption" value="No pude ni terminarlo." /><span>No pude ni terminarlo.</span></label>
+                <label class="feeling-option"><input type="radio" name="feelingOption" value="Ni bueno ni malo, simplemente correcto." /><span>Ni bueno ni malo, simplemente correcto.</span></label>
+              </div>
+            </section>
+
+            <section class="journal-middle">
+              <div class="journal-ratings">
+                <div class="rating-card">
+                  <h3>Valoraci&oacute;n de romance</h3>
+                  <div class="symbol-rating symbol-rating--hearts" data-rating-group="romance">
+                    <button type="button" data-value="1">&#9825;</button>
+                    <button type="button" data-value="2">&#9825;</button>
+                    <button type="button" data-value="3">&#9825;</button>
+                    <button type="button" data-value="4">&#9825;</button>
+                    <button type="button" data-value="5">&#9825;</button>
+                  </div>
+                </div>
+
+                <div class="rating-card">
+                  <h3>Valoraci&oacute;n de spice</h3>
+                  <div class="symbol-rating symbol-rating--spice" data-rating-group="spice">
+                    <button type="button" data-value="1">&#127798;</button>
+                    <button type="button" data-value="2">&#127798;</button>
+                    <button type="button" data-value="3">&#127798;</button>
+                    <button type="button" data-value="4">&#127798;</button>
+                    <button type="button" data-value="5">&#127798;</button>
+                  </div>
+                </div>
+
+                <div class="rating-card">
+                  <h3>Valoraci&oacute;n de tristeza</h3>
+                  <div class="symbol-rating symbol-rating--sadness" data-rating-group="sadness">
+                    <button type="button" data-value="1"><i class="fa-solid fa-droplet"></i></button>
+                    <button type="button" data-value="2"><i class="fa-solid fa-droplet"></i></button>
+                    <button type="button" data-value="3"><i class="fa-solid fa-droplet"></i></button>
+                    <button type="button" data-value="4"><i class="fa-solid fa-droplet"></i></button>
+                    <button type="button" data-value="5"><i class="fa-solid fa-droplet"></i></button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="journal-side">
+                <div class="journal-block journal-block--compact">
+                  <h2>Personajes destacados</h2>
+                  <label class="field">
+                    <span>&#10084; Mejor personaje</span>
+                    <input id="bestCharacter" type="text" placeholder="Tu favorito" />
+                  </label>
+                  <label class="field">
+                    <span>&#128049; Peor personaje</span>
+                    <input id="worstCharacter" type="text" placeholder="El que menos te gust&oacute;" />
+                  </label>
+                </div>
+
+                <div class="journal-block journal-block--compact">
+                  <h2>Aspectos del libro</h2>
+                  <div class="mini-ratings">
+                    <div class="mini-rating-row">
+                      <span>Trama</span>
+                      <div class="mini-stars" data-rating-group="plot">
+                        <button type="button" data-value="1">&#9734;</button><button type="button" data-value="2">&#9734;</button><button type="button" data-value="3">&#9734;</button><button type="button" data-value="4">&#9734;</button><button type="button" data-value="5">&#9734;</button>
+                      </div>
+                    </div>
+                    <div class="mini-rating-row">
+                      <span>Personajes</span>
+                      <div class="mini-stars" data-rating-group="characters">
+                        <button type="button" data-value="1">&#9734;</button><button type="button" data-value="2">&#9734;</button><button type="button" data-value="3">&#9734;</button><button type="button" data-value="4">&#9734;</button><button type="button" data-value="5">&#9734;</button>
+                      </div>
+                    </div>
+                    <div class="mini-rating-row">
+                      <span>Estilo</span>
+                      <div class="mini-stars" data-rating-group="style">
+                        <button type="button" data-value="1">&#9734;</button><button type="button" data-value="2">&#9734;</button><button type="button" data-value="3">&#9734;</button><button type="button" data-value="4">&#9734;</button><button type="button" data-value="5">&#9734;</button>
+                      </div>
+                    </div>
+                    <div class="mini-rating-row">
+                      <span>Final</span>
+                      <div class="mini-stars" data-rating-group="ending">
+                        <button type="button" data-value="1">&#9734;</button><button type="button" data-value="2">&#9734;</button><button type="button" data-value="3">&#9734;</button><button type="button" data-value="4">&#9734;</button><button type="button" data-value="5">&#9734;</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="journal-block">
+              <h2>Reflexiones finales</h2>
+              <textarea id="reflexionesFinales" rows="6" placeholder="Escribe aqu&iacute; lo que te deja el libro: frases, emociones, ideas o una conclusi&oacute;n final."></textarea>
+            </section>
+
+            <div class="journal-actions">
+              <button type="button" id="saveJournalEntry" class="journal-action-button">
+                Guardar rese&ntilde;a
+              </button>
+            </div>
+          </form>
+
+          <aside class="journal-reviews-panel">
+            <div class="journal-reviews-panel__header">
+              <div>
+                <p class="journal-reviews-panel__eyebrow">Reading Journal</p>
+                <h2>Mis rese&ntilde;as</h2>
+              </div>
+              <span id="journalEntriesCount" class="journal-reviews-count">0</span>
+            </div>
+            <div id="journalEntriesList" class="journal-reviews-list">
+              <p class="journal-empty-state">Todav&iacute;a no has guardado ninguna rese&ntilde;a.</p>
+            </div>
+            <button type="button" id="openJournalReviewsModal" class="journal-action-button journal-reviews-panel__open">
+              Ver todas las rese&ntilde;as
+            </button>
+          </aside>
+        </section>
+      </section>
+    </main>
+
+    <div id="journalReviewModal" class="journal-modal" aria-hidden="true">
+      <div class="journal-modal__overlay" data-close-modal></div>
+      <div class="journal-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="journalModalTitle">
+        <button type="button" class="journal-modal__close" id="closeJournalModal" aria-label="Cerrar">&times;</button>
+        <div class="journal-modal__header">
+          <p class="journal-modal__eyebrow">My Reading Journal</p>
+          <h2 id="journalModalTitle">Mis rese&ntilde;as guardadas</h2>
+        </div>
+        <div class="journal-modal__content">
+          <aside id="journalModalList" class="journal-modal__list">
+            <p class="journal-empty-state">Todav&iacute;a no has guardado ninguna rese&ntilde;a.</p>
+          </aside>
+          <section id="journalModalDetail" class="journal-modal__detail">
+            <p class="journal-empty-state">Selecciona una rese&ntilde;a para ver todos sus detalles.</p>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <p class="site-footer__copy">&copy; 2026 Libria. Todos los derechos reservados.</p>
+        <div class="site-footer__socials" aria-label="Redes sociales">
+          <span class="footer-social" aria-label="Instagram" role="img">
+            <i class="fab fa-instagram"></i>
+          </span>
+          <span class="footer-social" aria-label="Twitter" role="img">
+            <i class="fab fa-twitter"></i>
+          </span>
+          <span class="footer-social" aria-label="Facebook" role="img">
+            <i class="fab fa-facebook-f"></i>
+          </span>
+          <a class="footer-social" th:href="@{/contacto}" aria-label="Ir a contacto por email">
+            <i class="fa-solid fa-envelope"></i>
+          </a>
+        </div>
+        <p class="site-footer__creators">Creadoras: Tatiana Baldassarre y Yesenia Rosales</p>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/navbar.js?v=2"></script>
+    <script src="js/book.js?v=9"></script>
+    <script src="js/comunidades.js?v=5"></script>
+  </body>
+</html>
