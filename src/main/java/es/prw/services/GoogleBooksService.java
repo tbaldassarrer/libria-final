@@ -135,10 +135,6 @@ public class GoogleBooksService {
         collectTitles(titles, getGoogleBooks(query, limit, true, "relevance"));
         collectTitles(titles, getGoogleBooks(query, limit, true, "newest"));
 
-        if (titles.isEmpty()) {
-            collectTitles(titles, getGoogleBooks(query, limit, false, "relevance"));
-        }
-
         return titles.stream()
                 .limit(Math.max(1, limit))
                 .toList();
@@ -158,15 +154,6 @@ public class GoogleBooksService {
                 getGoogleBooks(cleanQuery, fetchLimit, true, "relevance"), limit);
         collectSuggestions(suggestions, seenTitles, cleanQuery,
                 getGoogleBooks(cleanQuery, fetchLimit, true, "newest"), limit);
-
-        if (suggestions.isEmpty()) {
-            collectSuggestions(suggestions, seenTitles, cleanQuery,
-                    getGoogleBooks("inauthor:" + cleanQuery, fetchLimit, false, "relevance"), limit);
-            collectSuggestions(suggestions, seenTitles, cleanQuery,
-                    getGoogleBooks("intitle:" + cleanQuery, fetchLimit, false, "relevance"), limit);
-            collectSuggestions(suggestions, seenTitles, cleanQuery,
-                    getGoogleBooks(cleanQuery, fetchLimit, false, "relevance"), limit);
-        }
 
         return suggestions.stream()
                 .limit(Math.max(1, limit))
@@ -208,11 +195,6 @@ public class GoogleBooksService {
             }
 
             items = getGoogleBooks(query, 5, true, "newest");
-            if (items != null && items.isArray() && !items.isEmpty()) {
-                return items;
-            }
-
-            items = getGoogleBooks(query, 5, false, "relevance");
             if (items != null && items.isArray() && !items.isEmpty()) {
                 return items;
             }

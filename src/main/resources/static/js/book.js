@@ -79,7 +79,12 @@ document.addEventListener("DOMContentLoaded", function () {
         selectedBook = firstSuggestion.title;
         selectedGoogleId = firstSuggestion.googleId || "";
         searchBookDetails(firstSuggestion.title, selectedGoogleId);
+        selectedBook = "";
+        selectedGoogleId = "";
+        return;
       }
+
+      searchBookDetails(searchInput.value.trim());
     });
 
     searchButton.addEventListener("click", function (event) {
@@ -114,7 +119,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      showSearchMessage("Sigue escribiendo para ver sugerencias.");
+      searchBookDetails(query);
     });
 
     function fetchSuggestions(query) {
