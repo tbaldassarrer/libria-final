@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Comparator;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -49,11 +50,11 @@ public class HomeController {
             model.addAttribute("username", username);
             User user = userRepository.findByNombreUsuario(username);
             model.addAttribute("readingGoal", user != null ? user.getDesafioLectura() : 10);
-            model.addAttribute("favoriteQuotesPreview", user != null ? getQuotePreview(user) : defaultQuotePreview());
+            model.addAttribute("favoriteQuotesPreview", user != null ? getQuotePreview(user) : List.of());
         } else {
             model.addAttribute("username", "Invitado");
             model.addAttribute("readingGoal", 10);
-            model.addAttribute("favoriteQuotesPreview", defaultQuotePreview());
+            model.addAttribute("favoriteQuotesPreview", List.of());
         }
         return "home"; // Se renderiza home.html en src/main/resources/templates
     }
@@ -98,7 +99,7 @@ public class HomeController {
             return response;
         }
 
-        int nextOrder = ensureDefaultQuotes(user).size();
+        int nextOrder = favoriteQuoteRepository.findByIdUsuarioOrderByOrdenVisualAscIdCitaAsc(user.getIdUsuario()).size();
         favoriteQuoteRepository.save(new FavoriteQuote(user.getIdUsuario(), normalizedText, normalizedWork, nextOrder));
 
         response.put("success", true);
@@ -245,41 +246,11 @@ public class HomeController {
         return getQuotesForDisplay(user).stream().limit(2).toList();
     }
 
-    private List<FavoriteQuote> defaultQuotePreview() {
-        List<FavoriteQuote> defaults = new ArrayList<>();
-        defaults.add(new FavoriteQuote(0,
-                "Si el mundo desapareciera y el se salvara, yo seguiria viviendo. Pero si desapareciera el y lo demas continuara igual, yo no podria vivir.",
-                "Cumbres Borrascosas",
-                0));
-        defaults.add(new FavoriteQuote(0,
-                "La rabia puede calentarte por la noche, y el orgullo herido puede alentar a un hombre a hacer cosas maravillosas.",
-                "El nombre del viento",
-                1));
-        return defaults;
-    }
-
-    private List<FavoriteQuote> ensureDefaultQuotes(User user) {
-        List<FavoriteQuote> quotes = favoriteQuoteRepository.findByIdUsuarioOrderByOrdenVisualAscIdCitaAsc(user.getIdUsuario());
-        if (!quotes.isEmpty()) {
-            return quotes;
-        }
-
-        List<FavoriteQuote> defaults = new ArrayList<>();
-        defaults.add(new FavoriteQuote(user.getIdUsuario(),
-                "Si el mundo desapareciera y el se salvara, yo seguiria viviendo. Pero si desapareciera el y lo demas continuara igual, yo no podria vivir.",
-                "Cumbres Borrascosas",
-                0));
-        defaults.add(new FavoriteQuote(user.getIdUsuario(),
-                "La rabia puede calentarte por la noche, y el orgullo herido puede alentar a un hombre a hacer cosas maravillosas.",
-                "El nombre del viento",
-                1));
-        favoriteQuoteRepository.saveAll(defaults);
-        return favoriteQuoteRepository.findByIdUsuarioOrderByOrdenVisualAscIdCitaAsc(user.getIdUsuario());
-    }
-
     private List<FavoriteQuote> getQuotesForDisplay(User user) {
-        ensureDefaultQuotes(user);
-        return favoriteQuoteRepository.findByIdUsuarioOrderByOrdenVisualDescIdCitaDesc(user.getIdUsuario());
+        return favoriteQuoteRepository.findByIdUsuarioOrderByOrdenVisualDescIdCitaDesc(user.getIdUsuario())
+                .stream()
+                .sorted(Comparator.comparing(FavoriteQuote::getIdCita, Comparator.nullsLast(Comparator.reverseOrder())))
+                .toList();
     }
 
     private List<Map<String, Object>> mapQuotes(List<FavoriteQuote> quotes) {

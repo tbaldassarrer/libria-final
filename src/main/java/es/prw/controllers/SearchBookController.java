@@ -7,6 +7,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Arrays;
+import java.text.Normalizer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +61,7 @@ public class SearchBookController {
             try {
                 bookRepository.findByTituloOrAutorContaining(cleanQuery)
                         .stream()
+                        .filter(book -> matchesSuggestionQuery(book.getTitulo(), book.getAutor(), cleanQuery))
                         .limit(MAX_SUGGESTIONS)
                         .forEach(book -> addSuggestion(suggestions, seenTitles, book));
             } catch (Exception e) {
@@ -84,6 +87,54 @@ public class SearchBookController {
         suggestion.put("cover_image", book.getCoverImage());
         suggestion.put("source", "Libria");
         suggestions.add(suggestion);
+    }
+
+    private boolean matchesSuggestionQuery(String title, String author, String query) {
+        if (query == null || query.isBlank()) {
+            return true;
+        }
+
+        List<String> words = extractWords((title == null ? "" : title) + " " + (author == null ? "" : author));
+        List<String> tokens = Arrays.stream(normalizeForMatch(query).split("\\s+"))
+                .map(String::trim)
+                .filter(token -> token.length() >= 2)
+                .toList();
+
+        if (tokens.isEmpty()) {
+            String normalizedQuery = normalizeForMatch(query);
+            return words.stream().anyMatch(word -> word.startsWith(normalizedQuery));
+        }
+
+        for (String token : tokens) {
+            boolean matchesToken = words.stream().anyMatch(word -> word.startsWith(token));
+            if (!matchesToken) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private List<String> extractWords(String value) {
+        String normalized = normalizeForMatch(value);
+        if (normalized.isBlank()) {
+            return List.of();
+        }
+
+        return Arrays.stream(normalized.split("[^\\p{IsAlphabetic}\\p{IsDigit}]+"))
+                .map(String::trim)
+                .filter(word -> !word.isBlank())
+                .toList();
+    }
+
+    private String normalizeForMatch(String value) {
+        if (value == null) {
+            return "";
+        }
+
+        String normalized = Normalizer.normalize(value, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "");
+        return normalized.toLowerCase().trim();
     }
 
     @GetMapping("/getBookDetails")

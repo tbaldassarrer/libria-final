@@ -2,6 +2,7 @@
   const previewContainer = document.getElementById("favoriteQuotesPreview");
   const openModalButton = document.getElementById("openQuotesModal");
   const addQuoteButton = document.getElementById("addFavoriteQuoteButton");
+  const showMoreButton = document.getElementById("showMoreQuotesButton");
   const modal = document.getElementById("favoriteQuotesModal");
   const modalOverlay = document.getElementById("favoriteQuotesOverlay");
   const closeButton = document.getElementById("closeQuotesModal");
@@ -19,6 +20,7 @@
   }
 
   let quotes = [];
+  let visiblePreviewCount = 2;
   const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || "";
   const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || "X-CSRF-TOKEN";
 
@@ -26,6 +28,11 @@
 
   openModalButton?.addEventListener("click", function () {
     openQuotesModal("list");
+  });
+
+  showMoreButton?.addEventListener("click", function () {
+    visiblePreviewCount += 4;
+    renderPreview();
   });
 
   addQuoteButton?.addEventListener("click", function () {
@@ -57,6 +64,7 @@
       })
       .then(data => {
         quotes = Array.isArray(data.quotes) ? data.quotes : [];
+        visiblePreviewCount = 2;
         renderPreview();
         renderQuotesList();
       })
@@ -67,10 +75,11 @@
 
   function renderPreview() {
     previewContainer.innerHTML = "";
-    const previewQuotes = quotes.slice(0, 2);
+    const previewQuotes = quotes.slice(0, visiblePreviewCount);
 
     if (previewQuotes.length === 0) {
       previewContainer.innerHTML = '<p class="favorite-quotes-empty">Aun no tienes citas favoritas guardadas.</p>';
+      if (showMoreButton) showMoreButton.style.display = "none";
       return;
     }
 
@@ -83,6 +92,10 @@
       `;
       previewContainer.appendChild(article);
     });
+
+    if (showMoreButton) {
+      showMoreButton.style.display = quotes.length > previewQuotes.length ? "inline-flex" : "none";
+    }
   }
 
   function renderQuotesList() {
@@ -168,6 +181,7 @@
         }
 
         quotes = Array.isArray(data.quotes) ? data.quotes : [];
+        visiblePreviewCount = Math.max(2, Math.min(visiblePreviewCount, quotes.length));
         renderPreview();
         renderQuotesList();
         resetQuoteForm();
@@ -211,6 +225,7 @@
         }
 
         quotes = Array.isArray(data.quotes) ? data.quotes : [];
+        visiblePreviewCount = Math.max(2, Math.min(visiblePreviewCount, quotes.length || 2));
         renderPreview();
         renderQuotesList();
         resetQuoteForm();

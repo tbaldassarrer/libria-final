@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Locale;
+import java.text.Normalizer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -132,8 +133,11 @@ public class GoogleBooksService {
     public List<String> searchTitles(String query, int limit) {
         Set<String> titles = new LinkedHashSet<>();
         collectTitles(titles, getGoogleBooks(query, limit, true, "relevance"));
-        collectTitles(titles, getGoogleBooks(query, limit, false, "relevance"));
-        collectTitles(titles, getGoogleBooks(query, limit, false, "newest"));
+        collectTitles(titles, getGoogleBooks(query, limit, true, "newest"));
+
+        if (titles.isEmpty()) {
+            collectTitles(titles, getGoogleBooks(query, limit, false, "relevance"));
+        }
 
         return titles.stream()
                 .limit(Math.max(1, limit))
@@ -149,17 +153,20 @@ public class GoogleBooksService {
         collectSuggestions(suggestions, seenTitles, cleanQuery,
                 getGoogleBooks("inauthor:" + cleanQuery, fetchLimit, true, "relevance"), limit);
         collectSuggestions(suggestions, seenTitles, cleanQuery,
-                getGoogleBooks("inauthor:" + cleanQuery, fetchLimit, false, "relevance"), limit);
-        collectSuggestions(suggestions, seenTitles, cleanQuery,
                 getGoogleBooks("intitle:" + cleanQuery, fetchLimit, true, "relevance"), limit);
-        collectSuggestions(suggestions, seenTitles, cleanQuery,
-                getGoogleBooks("intitle:" + cleanQuery, fetchLimit, false, "relevance"), limit);
         collectSuggestions(suggestions, seenTitles, cleanQuery,
                 getGoogleBooks(cleanQuery, fetchLimit, true, "relevance"), limit);
         collectSuggestions(suggestions, seenTitles, cleanQuery,
-                getGoogleBooks(cleanQuery, fetchLimit, false, "relevance"), limit);
-        collectSuggestions(suggestions, seenTitles, cleanQuery,
-                getGoogleBooks(cleanQuery, fetchLimit, false, "newest"), limit);
+                getGoogleBooks(cleanQuery, fetchLimit, true, "newest"), limit);
+
+        if (suggestions.isEmpty()) {
+            collectSuggestions(suggestions, seenTitles, cleanQuery,
+                    getGoogleBooks("inauthor:" + cleanQuery, fetchLimit, false, "relevance"), limit);
+            collectSuggestions(suggestions, seenTitles, cleanQuery,
+                    getGoogleBooks("intitle:" + cleanQuery, fetchLimit, false, "relevance"), limit);
+            collectSuggestions(suggestions, seenTitles, cleanQuery,
+                    getGoogleBooks(cleanQuery, fetchLimit, false, "relevance"), limit);
+        }
 
         return suggestions.stream()
                 .limit(Math.max(1, limit))
@@ -200,12 +207,12 @@ public class GoogleBooksService {
                 return items;
             }
 
-            items = getGoogleBooks(query, 5, false, "relevance");
+            items = getGoogleBooks(query, 5, true, "newest");
             if (items != null && items.isArray() && !items.isEmpty()) {
                 return items;
             }
 
-            items = getGoogleBooks(query, 5, false, "newest");
+            items = getGoogleBooks(query, 5, false, "relevance");
             if (items != null && items.isArray() && !items.isEmpty()) {
                 return items;
             }
@@ -271,23 +278,47 @@ public class GoogleBooksService {
             return true;
         }
 
-        String haystack = (title + " " + author).toLowerCase(Locale.ROOT);
-        List<String> tokens = Arrays.stream(query.toLowerCase(Locale.ROOT).split("\\s+"))
+        List<String> words = extractWords(title + " " + author);
+        List<String> tokens = Arrays.stream(normalizeForMatch(query).split("\\s+"))
                 .map(String::trim)
                 .filter(token -> token.length() >= 2)
                 .toList();
 
         if (tokens.isEmpty()) {
-            return haystack.contains(query.toLowerCase(Locale.ROOT));
+            String normalizedQuery = normalizeForMatch(query);
+            return words.stream().anyMatch(word -> word.startsWith(normalizedQuery));
         }
 
         for (String token : tokens) {
-            if (!haystack.contains(token)) {
+            boolean matchesToken = words.stream().anyMatch(word -> word.startsWith(token));
+            if (!matchesToken) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    private List<String> extractWords(String value) {
+        String normalized = normalizeForMatch(value);
+        if (normalized.isBlank()) {
+            return List.of();
+        }
+
+        return Arrays.stream(normalized.split("[^\\p{IsAlphabetic}\\p{IsDigit}]+"))
+                .map(String::trim)
+                .filter(word -> !word.isBlank())
+                .toList();
+    }
+
+    private String normalizeForMatch(String value) {
+        if (value == null) {
+            return "";
+        }
+
+        String normalized = Normalizer.normalize(value, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "");
+        return normalized.toLowerCase(Locale.ROOT).trim();
     }
 
     private Book saveGoogleBook(JsonNode item) {
