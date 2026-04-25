@@ -1,4 +1,4 @@
-Acceso a web: **https://libria-final.onrender.com**
+Acceso a web: **https://libria-final.onrender.com**, esperaremos unos minutos para que arranque, ya que al estar en el plan FREE la web estará dormida unos minutos antes de cargar.
 
 #Para poder acceder a todo el contenido deberás **crear un usuario y contraseña** (el email no tendrá que ser real puesto que aún no le hemos añadido confirmación de usuario vía email)
 
