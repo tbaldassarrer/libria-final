@@ -123,6 +123,10 @@ public class GoogleBooksService {
                 return null;
             }
 
+            if (!isSpanishVolume(item.path("volumeInfo"))) {
+                return null;
+            }
+
             return saveGoogleBook(item);
         } catch (Exception e) {
             System.out.println("Error consultando Google Books por id: " + e.getMessage());
@@ -190,12 +194,12 @@ public class GoogleBooksService {
     private JsonNode firstAvailableGoogleResults(String... queries) {
         for (String query : queries) {
             JsonNode items = getGoogleBooks(query, 5, true, "relevance");
-            if (items != null && items.isArray() && !items.isEmpty()) {
+            if (hasSpanishItems(items)) {
                 return items;
             }
 
             items = getGoogleBooks(query, 5, true, "newest");
-            if (items != null && items.isArray() && !items.isEmpty()) {
+            if (hasSpanishItems(items)) {
                 return items;
             }
         }
@@ -209,7 +213,12 @@ public class GoogleBooksService {
         }
 
         for (JsonNode item : items) {
-            String title = text(item.path("volumeInfo").path("title"), "");
+            JsonNode info = item.path("volumeInfo");
+            if (!isSpanishVolume(info)) {
+                continue;
+            }
+
+            String title = text(info.path("title"), "");
             if (!title.isBlank()) {
                 titles.add(title);
             }
@@ -233,6 +242,10 @@ public class GoogleBooksService {
             }
 
             JsonNode info = item.path("volumeInfo");
+            if (!isSpanishVolume(info)) {
+                continue;
+            }
+
             String title = text(info.path("title"), "");
             String author = joinAuthors(info.path("authors"));
 
@@ -305,6 +318,10 @@ public class GoogleBooksService {
 
     private Book saveGoogleBook(JsonNode item) {
         JsonNode info = item.path("volumeInfo");
+        if (!isSpanishVolume(info)) {
+            return null;
+        }
+
         String googleTitle = text(info.path("title"), "");
         if (googleTitle.isBlank()) {
             return null;
@@ -347,6 +364,25 @@ public class GoogleBooksService {
 
         String value = node.asText();
         return value == null || value.isBlank() ? fallback : value;
+    }
+
+    private boolean hasSpanishItems(JsonNode items) {
+        if (items == null || !items.isArray() || items.isEmpty()) {
+            return false;
+        }
+
+        for (JsonNode item : items) {
+            if (isSpanishVolume(item.path("volumeInfo"))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private boolean isSpanishVolume(JsonNode info) {
+        String language = text(info.path("language"), "");
+        return "es".equalsIgnoreCase(language);
     }
 
     private String joinAuthors(JsonNode authors) {

@@ -2,6 +2,7 @@ package es.prw.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -19,6 +20,9 @@ import es.prw.repositories.UserRepository;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    @Value("${app.security.remember-me.key:libria-remember-me}")
+    private String rememberMeKey;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -57,7 +61,8 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http,
-            DaoAuthenticationProvider authenticationProvider) throws Exception {
+            DaoAuthenticationProvider authenticationProvider,
+            UserDetailsService userDetailsService) throws Exception {
 
         http
                 .authenticationProvider(authenticationProvider)
@@ -70,6 +75,11 @@ public class SecurityConfig {
                         .defaultSuccessUrl("/home", true)
                         .failureUrl("/login?error")
                         .permitAll())
+                .rememberMe(remember -> remember
+                        .key(rememberMeKey)
+                        .alwaysRemember(true)
+                        .tokenValiditySeconds(60 * 60 * 24 * 30)
+                        .userDetailsService(userDetailsService))
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout")
