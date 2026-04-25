@@ -57,7 +57,7 @@ public class SearchBookController {
             System.out.println("Error al buscar libros en Google Books: " + e.getMessage());
         }
 
-        if (suggestions.size() < MAX_SUGGESTIONS) {
+        if (suggestions.isEmpty()) {
             try {
                 bookRepository.findByTituloOrAutorContaining(cleanQuery)
                         .stream()
