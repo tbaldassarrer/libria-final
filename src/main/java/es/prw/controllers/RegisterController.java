@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataAccessException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.mail.MailException;
 import org.springframework.stereotype.Controller;
@@ -102,21 +103,32 @@ public class RegisterController {
             model.addAttribute("registerError", "No se pudo enviar el email de activacion. Revisa el correo SMTP y la contrasena de aplicacion.");
             model.addAttribute("nombreUsuario", nombreUsuario);
             model.addAttribute("email", email);
-            System.out.println("ERROR SMTP: " + e.getMessage());
+            System.err.println("ERROR SMTP al registrar usuario " + nombreUsuario + ": " + e.getMessage());
+            e.printStackTrace();
             return "login";
         } catch (IllegalStateException e) {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             model.addAttribute("registerError", e.getMessage());
             model.addAttribute("nombreUsuario", nombreUsuario);
             model.addAttribute("email", email);
-            System.out.println("ERROR CONFIG EMAIL: " + e.getMessage());
+            System.err.println("ERROR CONFIG EMAIL al registrar usuario " + nombreUsuario + ": " + e.getMessage());
+            e.printStackTrace();
+            return "login";
+        } catch (DataAccessException e) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            model.addAttribute("registerError", "No se pudo crear la cuenta por un problema con la base de datos. Revisa los logs de Render.");
+            model.addAttribute("nombreUsuario", nombreUsuario);
+            model.addAttribute("email", email);
+            System.err.println("ERROR BASE DE DATOS al registrar usuario " + nombreUsuario + ": " + e.getMessage());
+            e.printStackTrace();
             return "login";
         } catch (Exception e) {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            model.addAttribute("registerError", "No se pudo completar el registro. Revisa la configuracion de correo o intentalo de nuevo.");
+            model.addAttribute("registerError", "No se pudo completar el registro. Revisa los logs de Render para ver el motivo exacto.");
             model.addAttribute("nombreUsuario", nombreUsuario);
             model.addAttribute("email", email);
-            System.out.println("ERROR: " + e.getMessage());
+            System.err.println("ERROR INESPERADO al registrar usuario " + nombreUsuario + ": " + e.getMessage());
+            e.printStackTrace();
             return "login";
         }
     }
