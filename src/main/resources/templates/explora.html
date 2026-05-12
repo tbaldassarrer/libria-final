@@ -84,14 +84,14 @@
           </article>
         </div>
         <div class="community-empty" th:if="${#lists.isEmpty(favoriteBooks)}">
-          Todav&iacute;a nadie ha marcado favoritos. S&eacute; la primera.
+          Todav&iacute;a no hay lecturas de 5 estrellas. S&eacute; la primera en recomendar una.
         </div>
       </section>
 
       <section class="community-section community-section--compact">
         <div class="community-block__header">
-          <h2>Lecturas que han dejado huella</h2>
-          <p>Libros que ya han sido vividos hasta el final.</p>
+          <h2>Lecturas con voz propia</h2>
+          <p>Rese&ntilde;as sinceras de la comunidad lectora.</p>
         </div>
         <div class="community-grid community-grid--stacked" th:if="${!#lists.isEmpty(completedBooks)}">
           <article class="community-card community-card--compact js-community-book"
@@ -106,7 +106,7 @@
           </article>
         </div>
         <div class="community-empty" th:if="${#lists.isEmpty(completedBooks)}">
-          A&uacute;n no hay lecturas terminadas. Todo empieza con una primera p&aacute;gina.
+          A&uacute;n no hay rese&ntilde;as compartidas. Cuando alguien termine un libro, aparecer&aacute; aqu&iacute;.
         </div>
       </section>
     </section>

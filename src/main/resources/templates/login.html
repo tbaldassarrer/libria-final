@@ -45,9 +45,12 @@
                   <label class="form-label" for="nombreUsuario">Nombre de Usuario</label>
                 </div>
 
-                <div class="form-outline mb-4">
-                  <input type="password" id="password" name="password" class="form-control" required autocomplete="off" />
-                  <label class="form-label" for="password">Contrase&ntilde;a</label>
+                <div class="form-outline mb-4 password-field">
+                  <input type="password" id="loginPassword" name="password" class="form-control password-input" required autocomplete="off" />
+                  <label class="form-label" for="loginPassword">Contrase&ntilde;a</label>
+                  <button type="button" class="password-toggle" data-password-toggle="loginPassword" aria-label="Mostrar contrase&ntilde;a">
+                    &#128065;
+                  </button>
                 </div>
 
                 <!-- Mensaje de error si el login falla -->
@@ -104,14 +107,20 @@
               <label class="form-label" for="email">Correo Electr&oacute;nico</label>
             </div>
 
-            <div class="form-outline mb-4">
-              <input type="password" id="password" name="password" class="form-control" required />
-              <label class="form-label" for="password">Contrase&ntilde;a</label>
+            <div class="form-outline mb-4 password-field">
+              <input type="password" id="registerPassword" name="password" class="form-control password-input" required />
+              <label class="form-label" for="registerPassword">Contrase&ntilde;a</label>
+              <button type="button" class="password-toggle" data-password-toggle="registerPassword" aria-label="Mostrar contrase&ntilde;a">
+                &#128065;
+              </button>
             </div>
 
-            <div class="form-outline mb-4">
-              <input type="password" id="reppassword" name="reppassword" class="form-control" required />
-              <label class="form-label" for="reppassword">Repite la Contrase&ntilde;a</label>
+            <div class="form-outline mb-4 password-field">
+              <input type="password" id="repeatPassword" name="reppassword" class="form-control password-input" required />
+              <label class="form-label" for="repeatPassword">Repite la Contrase&ntilde;a</label>
+              <button type="button" class="password-toggle" data-password-toggle="repeatPassword" aria-label="Mostrar contrase&ntilde;a">
+                &#128065;
+              </button>
             </div>
 
             <button type="submit" class="btn custom-btn btn-block mb-4">
@@ -134,7 +143,7 @@
     window.onload = function () {
         // Limpia los campos al cargar la pÃ¡gina
         document.getElementById("nombreUsuario").value = "";
-        document.getElementById("password").value = "";
+        document.getElementById("loginPassword").value = "";
 
         // Evita que el navegador almacene datos de formularios previos
         if (window.history.replaceState) {
@@ -144,6 +153,20 @@
   </script>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
+      document.querySelectorAll("[data-password-toggle]").forEach(function (button) {
+          button.addEventListener("click", function () {
+              const input = document.getElementById(button.dataset.passwordToggle);
+              if (!input) {
+                  return;
+              }
+
+              const isHidden = input.type === "password";
+              input.type = isHidden ? "text" : "password";
+              button.classList.toggle("is-visible", isHidden);
+              button.setAttribute("aria-label", isHidden ? "Ocultar contrasena" : "Mostrar contrasena");
+          });
+      });
+
       const feedback = document.getElementById("registerFeedback");
       const registerError = feedback?.dataset.registerError || "";
       const registerSuccess = feedback?.dataset.registerSuccess || "";

@@ -1,21 +1,37 @@
 package es.prw.controllers;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.mail.MailException;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import es.prw.models.User;
 import es.prw.repositories.UserRepository;
+import es.prw.services.EmailService;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Controller
 public class RegisterController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private EmailService emailService;
+
+    @Value("${app.base-url:}")
+    private String appBaseUrl;
 
     @PostMapping("/register")
     @Transactional
@@ -24,67 +40,122 @@ public class RegisterController {
             @RequestParam("email") String email,
             @RequestParam("password") String password,
             @RequestParam("reppassword") String reppassword,
-            Model model) {
+            Model model,
+            HttpServletRequest request) {
 
-        System.out.println("⏳ Intentando registrar usuario: " + nombreUsuario + ", email: " + email);
+        nombreUsuario = nombreUsuario.trim();
+        email = email.trim().toLowerCase();
 
-        // Validación de la contraseña
+        System.out.println("Intentando registrar usuario: " + nombreUsuario + ", email: " + email);
+
         String passwordPattern = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*?&.])[A-Za-z\\d@$!%*?&.]{6,}$";
         if (!password.matches(passwordPattern)) {
-            model.addAttribute("registerError", "⚠️ La contraseña debe tener al menos 6 caracteres, una letra, un número y un carácter especial.");
+            model.addAttribute("registerError", "La contrasena debe tener al menos 6 caracteres, una letra, un numero y un caracter especial.");
             model.addAttribute("nombreUsuario", nombreUsuario);
             model.addAttribute("email", email);
             return "login";
         }
 
-        // Verificar que las contraseñas coincidan
         if (!password.equals(reppassword)) {
-            model.addAttribute("registerError", "❌ Las contraseñas no coinciden.");
+            model.addAttribute("registerError", "Las contrasenas no coinciden.");
             model.addAttribute("nombreUsuario", nombreUsuario);
             model.addAttribute("email", email);
             return "login";
         }
 
         try {
-            // Verificar si el email ya está registrado
             if (userRepository.findByEmail(email) != null) {
-                model.addAttribute("registerError", "⚠️ El correo ya está registrado.");
+                model.addAttribute("registerError", "El correo ya esta registrado.");
                 model.addAttribute("nombreUsuario", nombreUsuario);
                 model.addAttribute("email", email);
                 return "login";
             }
 
-            // Verificar si el nombre de usuario ya está registrado
             if (userRepository.findByNombreUsuario(nombreUsuario) != null) {
-                model.addAttribute("registerError", "⚠️ El nombre de usuario ya está registrado.");
+                model.addAttribute("registerError", "El nombre de usuario ya esta registrado.");
                 model.addAttribute("nombreUsuario", nombreUsuario);
                 model.addAttribute("email", email);
                 return "login";
             }
 
-            // Encriptar la contraseña
             BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
             String hashedPassword = encoder.encode(password);
+            String activationToken = UUID.randomUUID().toString();
 
-            System.out.println("🔐 Contraseña encriptada: " + hashedPassword);
-
-            // Crear y guardar el usuario
             User user = new User(nombreUsuario, email, hashedPassword);
+            user.setEnabled(false);
+            user.setActivationToken(activationToken);
+            user.setActivationTokenCreatedAt(LocalDateTime.now());
+
             User savedUser = userRepository.save(user);
 
-            System.out.println("✅ Usuario guardado con ID: " + savedUser.getIdUsuario());
+            String activationUrl = buildActivationUrl(request, activationToken);
 
-            model.addAttribute("registerSuccess", "✅ Registro completado correctamente, ¡Bienvenido a LIBRIA!");
-            System.out.println("✅ Usuario registrado correctamente.");
+            emailService.sendActivationEmail(savedUser.getEmail(), savedUser.getNombreUsuario(), activationUrl);
 
+            System.out.println("Usuario pendiente de activacion guardado con ID: " + savedUser.getIdUsuario());
+            model.addAttribute("registerSuccess", "Te hemos enviado un email de activacion. Revisa tu correo para completar el registro.");
             return "login";
 
-        } catch (Exception e) {
-            model.addAttribute("registerError", "❌ Error en la base de datos: " + e.getMessage());
+        } catch (MailException e) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            model.addAttribute("registerError", "No se pudo enviar el email de activacion. Revisa el correo SMTP y la contrasena de aplicacion.");
             model.addAttribute("nombreUsuario", nombreUsuario);
             model.addAttribute("email", email);
-            System.out.println("❌ ERROR: " + e.getMessage());
+            System.out.println("ERROR SMTP: " + e.getMessage());
+            return "login";
+        } catch (IllegalStateException e) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            model.addAttribute("registerError", e.getMessage());
+            model.addAttribute("nombreUsuario", nombreUsuario);
+            model.addAttribute("email", email);
+            System.out.println("ERROR CONFIG EMAIL: " + e.getMessage());
+            return "login";
+        } catch (Exception e) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            model.addAttribute("registerError", "No se pudo completar el registro. Revisa la configuracion de correo o intentalo de nuevo.");
+            model.addAttribute("nombreUsuario", nombreUsuario);
+            model.addAttribute("email", email);
+            System.out.println("ERROR: " + e.getMessage());
             return "login";
         }
+    }
+
+    private String buildActivationUrl(HttpServletRequest request, String activationToken) {
+        if (appBaseUrl != null && !appBaseUrl.isBlank()) {
+            return ServletUriComponentsBuilder
+                    .fromUriString(appBaseUrl.trim())
+                    .path("/activate")
+                    .queryParam("token", activationToken)
+                    .build()
+                    .toUriString();
+        }
+
+        return ServletUriComponentsBuilder
+                .fromRequestUri(request)
+                .replacePath(request.getContextPath() + "/activate")
+                .replaceQuery(null)
+                .queryParam("token", activationToken)
+                .build()
+                .toUriString();
+    }
+
+    @GetMapping("/activate")
+    @Transactional
+    public String activateAccount(@RequestParam("token") String token, Model model) {
+        User user = userRepository.findByActivationToken(token);
+
+        if (user == null) {
+            model.addAttribute("registerError", "El enlace de activacion no es valido.");
+            return "login";
+        }
+
+        user.setEnabled(true);
+        user.setActivationToken(null);
+        user.setActivationTokenCreatedAt(null);
+        userRepository.save(user);
+
+        model.addAttribute("registerSuccess", "Cuenta activada correctamente. Ya puedes iniciar sesion.");
+        return "login";
     }
 }

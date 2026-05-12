@@ -1,5 +1,7 @@
 package es.prw.models;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -28,6 +30,15 @@ public class User {
     @Column(name = "desafio_lectura")
     private Integer desafioLectura = 10;
 
+    @Column(name = "enabled")
+    private Boolean enabled = false;
+
+    @Column(name = "activation_token", unique = true, length = 100)
+    private String activationToken;
+
+    @Column(name = "activation_token_created_at")
+    private LocalDateTime activationTokenCreatedAt;
+
     // Constructor vacío obligatorio para JPA
     public User() {}
 
@@ -35,6 +46,7 @@ public class User {
         this.nombreUsuario = nombreUsuario;
         this.email = email;
         this.password = password;
+        this.enabled = false;
     }
 
     // Getters y Setters
@@ -76,5 +88,29 @@ public class User {
 
     public void setDesafioLectura(Integer desafioLectura) {
         this.desafioLectura = desafioLectura;
+    }
+
+    public boolean isEnabled() {
+        return enabled == null || Boolean.TRUE.equals(enabled);
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public String getActivationToken() {
+        return activationToken;
+    }
+
+    public void setActivationToken(String activationToken) {
+        this.activationToken = activationToken;
+    }
+
+    public LocalDateTime getActivationTokenCreatedAt() {
+        return activationTokenCreatedAt;
+    }
+
+    public void setActivationTokenCreatedAt(LocalDateTime activationTokenCreatedAt) {
+        this.activationTokenCreatedAt = activationTokenCreatedAt;
     }
 }

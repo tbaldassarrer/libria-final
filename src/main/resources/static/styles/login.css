@@ -493,4 +493,35 @@ body {
   box-shadow: 0px 4px 10px rgba(39, 24, 53, 0.2);
 }
 
+.password-field {
+  position: relative;
+}
+
+.password-field .password-input {
+  padding-right: 48px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  z-index: 3;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--libria-primary);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.password-toggle:hover,
+.password-toggle.is-visible {
+  background: rgba(75, 34, 103, 0.12);
+}
+
 

@@ -12,4 +12,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     // Busca un usuario por su email
     User findByEmail(String email);
+
+    User findByActivationToken(String activationToken);
 }

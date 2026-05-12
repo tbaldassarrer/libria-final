@@ -1,47 +1,37 @@
-Acceso a web: **https://libria-final.onrender.com**, esperaremos unos minutos para que arranque, ya que al estar en el plan FREE la web estará dormida unos minutos antes de cargar.
-
-#Para poder acceder a todo el contenido deberás **crear un usuario y contraseña** (el email no tendrá que ser real puesto que aún no le hemos añadido confirmación de usuario vía email)
-
 # Libria
+
+Acceso web: **https://libria-final.onrender.com**. En el plan gratuito puede tardar unos minutos en arrancar.
+
+Para acceder a todo el contenido debes crear un usuario, indicar un email real y elegir una contrasena. La cuenta se activa desde el enlace enviado por email.
 
 **Donde viven tus libros.**
 
-Libria es una aplicación web para organizar lecturas, descubrir libros y guardar reseñas con una experiencia visual suave, limpia y centrada en el lector.
-
-![Java](https://img.shields.io/badge/Java-17-8A48CC?style=for-the-badge)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.0-8A48CC?style=for-the-badge)
-![MySQL](https://img.shields.io/badge/MySQL-8-8A48CC?style=for-the-badge)
-![Thymeleaf](https://img.shields.io/badge/Thymeleaf-Templates-8A48CC?style=for-the-badge)
-
-## Vista General
-
-Libria permite llevar el control de tus libros leídos, lecturas actuales, próximas lecturas, favoritos y reseñas personales. También incluye una sección de exploración por géneros, con libros seleccionados y enriquecidos con datos de Google Books cuando están disponibles.
-
-La idea es sencilla: tener una biblioteca personal bonita, práctica y fácil de consultar.
+Libria es una aplicacion web para organizar lecturas, descubrir libros y guardar resenas con una experiencia visual limpia y centrada en el lector.
 
 ## Funcionalidades
 
-- Registro e inicio de sesión de usuarios.
-- Búsqueda de libros por título desde la base de datos.
-- Integración con Google Books para completar información de libros externos.
-- Biblioteca personal de libros leídos.
-- Lectura actual y próximas lecturas.
-- Sistema de reseñas y puntuaciones.
+- Registro e inicio de sesion de usuarios.
+- Activacion de cuenta por email.
+- Busqueda de libros por titulo desde la base de datos.
+- Integracion con Google Books para completar informacion de libros externos.
+- Biblioteca personal de libros leidos.
+- Lectura actual y proximas lecturas.
+- Sistema de resenas y puntuaciones.
 - Favoritos.
-- Vista `Explora` organizada por géneros.
-- Diseño responsive para escritorio, portátil y móvil.
+- Vista `Explora` organizada por generos.
+- Diseno responsive para escritorio, portatil y movil.
 
-## Tecnologías
+## Tecnologias
 
-- **Java 17**
-- **Spring Boot 3.4.0**
-- **Spring Security**
-- **Spring Data JPA**
-- **MySQL**
-- **Thymeleaf**
-- **HTML, CSS y JavaScript**
-- **Maven**
-- **Google Books API**
+- Java 17
+- Spring Boot 3.4.0
+- Spring Security
+- Spring Data JPA
+- MySQL
+- Thymeleaf
+- HTML, CSS y JavaScript
+- Maven
+- Google Books API
 
 ## Estructura
 
@@ -49,14 +39,14 @@ La idea es sencilla: tener una biblioteca personal bonita, práctica y fácil de
 src/
   main/
     java/es/prw/
-      config/          Configuración principal
+      config/          Configuracion principal
       controllers/     Controladores web y endpoints
       models/          Entidades de dominio
       repositories/    Repositorios JPA
-      security/        Seguridad y autenticación
-      services/        Integraciones y lógica auxiliar
+      security/        Seguridad y autenticacion
+      services/        Integraciones y logica auxiliar
     resources/
-      static/          CSS, JS e imágenes
+      static/          CSS, JS e imagenes
       templates/       Vistas Thymeleaf
       application.properties
 ```
@@ -67,8 +57,9 @@ src/
 - MySQL 8.
 - Maven Wrapper incluido en el proyecto.
 - Base de datos `db_libria` creada localmente.
+- Servidor SMTP para enviar los emails de activacion.
 
-## Configuración
+## Configuracion
 
 El proyecto usa MySQL. Revisa `src/main/resources/application.properties` y ajusta estos valores si tu entorno es distinto:
 
@@ -79,7 +70,18 @@ spring.datasource.username=root
 spring.datasource.password=1234
 ```
 
-## Ejecución
+Para enviar emails reales configura estas variables:
+
+```properties
+MAIL_HOST=smtp.tu-proveedor.com
+MAIL_PORT=587
+MAIL_USERNAME=tu-correo@dominio.com
+MAIL_PASSWORD=tu-password-o-app-password
+MAIL_SMTP_AUTH=true
+MAIL_SMTP_STARTTLS=true
+```
+
+## Ejecucion
 
 En Windows:
 
@@ -93,7 +95,7 @@ En macOS/Linux:
 ./mvnw spring-boot:run
 ```
 
-Después abre:
+Despues abre:
 
 ```text
 http://localhost:8081
@@ -112,4 +114,4 @@ http://localhost:8081
 
 ## Estado
 
-Proyecto académico en evolución, con foco en una experiencia de lectura personal, sencilla y visualmente agradable.
+Proyecto academico en evolucion, con foco en una experiencia de lectura personal, sencilla y visualmente agradable.

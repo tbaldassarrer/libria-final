@@ -41,6 +41,7 @@ public class SecurityConfig {
             return org.springframework.security.core.userdetails.User.builder()
                     .username(usuario.getNombreUsuario())
                     .password(usuario.getPassword())
+                    .disabled(!usuario.isEnabled())
                     .roles("USER")
                     .build();
         };
@@ -67,7 +68,7 @@ public class SecurityConfig {
         http
                 .authenticationProvider(authenticationProvider)
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/styles/**", "/js/**", "/images/**", "/bootstrap/**", "/login", "/register", "/").permitAll()
+                        .requestMatchers("/styles/**", "/js/**", "/images/**", "/bootstrap/**", "/login", "/register", "/activate", "/").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/login")

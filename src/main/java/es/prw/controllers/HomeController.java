@@ -305,7 +305,9 @@ public class HomeController {
                 "MAX(COALESCE(rl.fechaFin, rl.fechaInicio)) AS actividad " +
                 "FROM registrolectura rl " +
                 "JOIN libros l ON rl.idLibro = l.idLibro " +
-                "WHERE rl.estadoLectura = 'Completado' AND rl.puntuacion = 5 " +
+                "WHERE rl.estadoLectura = 'Completado' " +
+                "AND rl.puntuacion IS NOT NULL AND rl.puntuacion < 5 " +
+                "AND rl.resenia IS NOT NULL AND TRIM(rl.resenia) <> '' " +
                 "GROUP BY l.idLibro, l.titulo, l.autor, l.cover_image " +
                 "ORDER BY actividad DESC, totalLectores DESC, l.idLibro DESC " +
                 "LIMIT ?";
@@ -351,13 +353,13 @@ public class HomeController {
 
         if ("favorite".equals(type)) {
             return totalLectores <= 1
-                    ? "Favorito de 1 lector"
-                    : "Favorito de " + totalLectores + " lectores";
+                    ? "1 lector lo puntuó con 5 estrellas"
+                    : totalLectores + " lectores lo puntuaron con 5 estrellas";
         }
 
         return totalLectores <= 1
-                ? "1 lector la termino con 5 estrellas"
-                : totalLectores + " lectores la terminaron con 5 estrellas";
+                ? "1 reseña compartida"
+                : totalLectores + " reseñas compartidas";
     }
 
     private List<Map<String, Object>> getCommunityQuotes(int limit) {
