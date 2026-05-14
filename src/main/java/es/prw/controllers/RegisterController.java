@@ -7,10 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.mail.MailAuthenticationException;
 import org.springframework.mail.MailException;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,7 +35,6 @@ public class RegisterController {
     private String appBaseUrl;
 
     @PostMapping("/register")
-    @Transactional
     public String registerUser(
             @RequestParam("nombreUsuario") String nombreUsuario,
             @RequestParam("email") String email,
@@ -65,7 +64,15 @@ public class RegisterController {
         }
 
         try {
-            if (userRepository.findByEmail(email) != null) {
+            User existingUserByEmail = userRepository.findByEmail(email);
+            if (existingUserByEmail != null) {
+                if (!existingUserByEmail.isEnabled()
+                        && existingUserByEmail.getNombreUsuario().equals(nombreUsuario)) {
+                    resendActivationEmail(existingUserByEmail, request);
+                    model.addAttribute("registerSuccess", "Te hemos reenviado el email de activacion. Revisa tu correo para completar el registro.");
+                    return "login";
+                }
+
                 model.addAttribute("registerError", "El correo ya esta registrado.");
                 model.addAttribute("nombreUsuario", nombreUsuario);
                 model.addAttribute("email", email);
@@ -88,42 +95,48 @@ public class RegisterController {
             user.setActivationToken(activationToken);
             user.setActivationTokenCreatedAt(LocalDateTime.now());
 
-            User savedUser = userRepository.save(user);
+            User savedUser = userRepository.saveAndFlush(user);
+            User createdUser = userRepository.findByEmail(email);
+            if (createdUser == null) {
+                throw new IllegalStateException("No se pudo confirmar el alta del usuario en la base de datos.");
+            }
 
             String activationUrl = buildActivationUrl(request, activationToken);
-
             emailService.sendActivationEmail(savedUser.getEmail(), savedUser.getNombreUsuario(), activationUrl);
 
             System.out.println("Usuario pendiente de activacion guardado con ID: " + savedUser.getIdUsuario());
             model.addAttribute("registerSuccess", "Te hemos enviado un email de activacion. Revisa tu correo para completar el registro.");
             return "login";
 
+        } catch (MailAuthenticationException e) {
+            model.addAttribute("registerError", "La cuenta quedo pendiente, pero Gmail rechazo la autenticacion SMTP. Revisa la contrasena de aplicacion y vuelve a intentarlo con el mismo usuario y correo.");
+            model.addAttribute("nombreUsuario", nombreUsuario);
+            model.addAttribute("email", email);
+            System.err.println("ERROR AUTENTICACION SMTP al registrar usuario " + nombreUsuario + ": " + e.getMessage());
+            e.printStackTrace();
+            return "login";
         } catch (MailException e) {
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            model.addAttribute("registerError", "No se pudo enviar el email de activacion. Revisa el correo SMTP y la contrasena de aplicacion.");
+            model.addAttribute("registerError", "La cuenta quedo pendiente, pero no se pudo enviar el email de activacion. Vuelve a intentarlo con el mismo usuario y correo.");
             model.addAttribute("nombreUsuario", nombreUsuario);
             model.addAttribute("email", email);
             System.err.println("ERROR SMTP al registrar usuario " + nombreUsuario + ": " + e.getMessage());
             e.printStackTrace();
             return "login";
         } catch (IllegalStateException e) {
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            model.addAttribute("registerError", e.getMessage());
+            model.addAttribute("registerError", "No se pudo confirmar la creacion de la cuenta. Revisa que estes usando la base de datos correcta.");
             model.addAttribute("nombreUsuario", nombreUsuario);
             model.addAttribute("email", email);
-            System.err.println("ERROR CONFIG EMAIL al registrar usuario " + nombreUsuario + ": " + e.getMessage());
+            System.err.println("ERROR CONFIRMANDO REGISTRO de " + nombreUsuario + ": " + e.getMessage());
             e.printStackTrace();
             return "login";
         } catch (DataAccessException e) {
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            model.addAttribute("registerError", "No se pudo crear la cuenta por un problema con la base de datos. Revisa los logs de Render.");
+            model.addAttribute("registerError", "No se pudo crear la cuenta ahora mismo. Estamos preparando la base de datos; intentalo de nuevo en unos minutos.");
             model.addAttribute("nombreUsuario", nombreUsuario);
             model.addAttribute("email", email);
             System.err.println("ERROR BASE DE DATOS al registrar usuario " + nombreUsuario + ": " + e.getMessage());
             e.printStackTrace();
             return "login";
         } catch (Exception e) {
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             model.addAttribute("registerError", "No se pudo completar el registro. Revisa los logs de Render para ver el motivo exacto.");
             model.addAttribute("nombreUsuario", nombreUsuario);
             model.addAttribute("email", email);
@@ -131,6 +144,21 @@ public class RegisterController {
             e.printStackTrace();
             return "login";
         }
+    }
+
+    private void resendActivationEmail(User user, HttpServletRequest request) {
+        String activationToken = UUID.randomUUID().toString();
+        user.setActivationToken(activationToken);
+        user.setActivationTokenCreatedAt(LocalDateTime.now());
+        User savedUser = userRepository.saveAndFlush(user);
+
+        String activationUrl = buildActivationUrl(request, activationToken);
+        emailService.sendActivationEmail(savedUser.getEmail(), savedUser.getNombreUsuario(), activationUrl);
+    }
+
+    @GetMapping("/register")
+    public String showRegisterFromDirectUrl() {
+        return "login";
     }
 
     private String buildActivationUrl(HttpServletRequest request, String activationToken) {

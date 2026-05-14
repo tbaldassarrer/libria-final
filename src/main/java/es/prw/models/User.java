@@ -33,7 +33,7 @@ public class User {
     @Column(name = "enabled")
     private Boolean enabled = false;
 
-    @Column(name = "activation_token", unique = true, length = 100)
+    @Column(name = "activation_token", length = 100)
     private String activationToken;
 
     @Column(name = "activation_token_created_at")

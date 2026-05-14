@@ -1,0 +1,19 @@
+{
+  "properties": [
+    {
+      "name": "app.security.remember-me.key",
+      "type": "java.lang.String",
+      "description": "Clave usada por Spring Security para firmar las cookies de remember-me."
+    },
+    {
+      "name": "app.base-url",
+      "type": "java.lang.String",
+      "description": "URL publica base de la aplicacion usada para construir enlaces absolutos."
+    },
+    {
+      "name": "app.mail.contact-to",
+      "type": "java.lang.String",
+      "description": "Direccion de destino para los mensajes enviados desde el formulario de contacto."
+    }
+  ]
+}

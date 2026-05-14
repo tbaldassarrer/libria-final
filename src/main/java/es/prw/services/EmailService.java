@@ -3,10 +3,16 @@ package es.prw.services;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import jakarta.annotation.PostConstruct;
 
 @Service
 public class EmailService {
+
+    private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
     private final JavaMailSender mailSender;
 
@@ -23,14 +29,20 @@ public class EmailService {
         this.mailSender = mailSender;
     }
 
+    @PostConstruct
+    public void logMailConfiguration() {
+        logger.info("Configuracion SMTP: host={}, usuario={}, passwordConfigurada={}",
+                clean(host),
+                clean(from),
+                !isBlank(clean(password)));
+    }
+
     public void sendActivationEmail(String to, String username, String activationUrl) {
         validateMailConfiguration();
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
-        if (from != null && !from.isBlank()) {
-            message.setFrom(from);
-        }
+        message.setFrom(clean(from));
         message.setSubject("Activa tu cuenta de Libria");
         message.setText(
                 "Hola " + username + ",\n\n"
@@ -38,6 +50,7 @@ public class EmailService {
                         + activationUrl + "\n\n"
                         + "Si no has creado esta cuenta, puedes ignorar este correo.");
 
+        logger.info("Enviando email de activacion desde {} hacia {} usando SMTP {}", clean(from), to, clean(host));
         mailSender.send(message);
     }
 
@@ -46,7 +59,7 @@ public class EmailService {
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
-        message.setFrom(from);
+        message.setFrom(clean(from));
         message.setReplyTo(senderEmail);
         message.setSubject("Nuevo mensaje de contacto de Libria");
         message.setText(
@@ -58,9 +71,17 @@ public class EmailService {
     }
 
     private void validateMailConfiguration() {
+        host = clean(host);
+        from = clean(from);
+        password = clean(password);
+
         if (isBlank(host) || isBlank(from) || isBlank(password)) {
             throw new IllegalStateException("No se pudo enviar el email de activacion. El correo de Libria no esta configurado.");
         }
+    }
+
+    private String clean(String value) {
+        return value == null ? "" : value.trim();
     }
 
     private boolean isBlank(String value) {
