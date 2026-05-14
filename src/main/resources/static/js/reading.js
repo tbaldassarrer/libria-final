@@ -170,7 +170,8 @@ function addToLibrary(title) {
             modal.dataset.bookTitle = title;
             delete modal.dataset.bookId;
             overlay.style.display = "block";
-            modal.style.display = "flex";
+            modal.style.display = "block";
+            modal.setAttribute("aria-hidden", "false");
 
             const reviewText = document.getElementById("reviewText");
             if (reviewText) reviewText.value = "";

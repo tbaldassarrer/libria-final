@@ -48,6 +48,48 @@ body {
   background-color: var(--libria-primary-hover) !important;
 }
 
+.review-privacy-popup {
+  width: min(380px, calc(100vw - 32px)) !important;
+  padding: 1.25rem 1.25rem 1.35rem !important;
+}
+
+.review-privacy-popup .swal2-icon {
+  width: 3.2rem;
+  height: 3.2rem;
+  margin: 0.35rem auto 0.95rem;
+}
+
+.review-privacy-popup .swal2-title {
+  margin: 0;
+  padding: 0;
+  font-size: 1.45rem;
+}
+
+.review-privacy-popup .swal2-html-container {
+  margin: 0.85rem 0 0;
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.review-privacy-popup .swal2-actions {
+  margin-top: 1.15rem;
+  gap: 8px;
+}
+
+.review-privacy-button,
+.review-privacy-cancel {
+  min-width: 76px;
+  padding: 9px 14px !important;
+  font-size: 0.95rem !important;
+}
+
+.review-privacy-cancel {
+  border: 0 !important;
+  border-radius: 5px !important;
+  background: #76808a !important;
+  color: #fff !important;
+}
+
 .barra_superior {
   display: flex;
   align-items: center;

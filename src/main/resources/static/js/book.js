@@ -242,6 +242,10 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
+    window.openBookDetailsFromTitle = function (bookTitle, googleId = "") {
+      searchBookDetails(bookTitle, googleId);
+    };
+
     if (closePopupButton && popupWindow) {
       closePopupButton.addEventListener("click", function () {
         popupWindow.style.display = "none";

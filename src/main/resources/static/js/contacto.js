@@ -1,8 +1,19 @@
 document.addEventListener("DOMContentLoaded", () => {
   const contactForm = document.getElementById("contactForm");
+  const submitButton = contactForm?.querySelector('button[type="submit"]');
+  let isSubmitting = false;
+
+  if (!contactForm) {
+    return;
+  }
 
   contactForm.addEventListener("submit", async function (event) {
     event.preventDefault();
+    event.stopPropagation();
+
+    if (isSubmitting) {
+      return;
+    }
 
     const name = document.getElementById("name").value.trim();
     const email = document.getElementById("email").value.trim();
@@ -23,6 +34,11 @@ document.addEventListener("DOMContentLoaded", () => {
       headers[csrfHeader] = csrfToken;
     }
 
+    isSubmitting = true;
+    if (submitButton) {
+      submitButton.disabled = true;
+    }
+
     try {
       const response = await fetch("/contacto", {
         method: "POST",
@@ -41,6 +57,11 @@ document.addEventListener("DOMContentLoaded", () => {
       contactForm.reset();
     } catch (error) {
       mostrarSweetAlert("Error", "No se pudo conectar con el servidor.", "error");
+    } finally {
+      isSubmitting = false;
+      if (submitButton) {
+        submitButton.disabled = false;
+      }
     }
   });
 
@@ -50,9 +71,11 @@ document.addEventListener("DOMContentLoaded", () => {
       title: titulo,
       text: mensaje,
       confirmButtonText: "OK",
-      confirmButtonColor: "#6b2db5",
-      background: "linear-gradient(135deg, #a375d3, #c9b6e4)",
-      color: "#ffffff",
+      heightAuto: false,
+      customClass: {
+        popup: "malva-popup",
+        confirmButton: "malva-confirm-button",
+      },
     });
   }
 });

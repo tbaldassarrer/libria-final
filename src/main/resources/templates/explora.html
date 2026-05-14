@@ -6,9 +6,10 @@
   <meta name="_csrf" th:content="${_csrf.token}" />
   <meta name="_csrf_header" th:content="${_csrf.headerName}" />
   <title>Libria Hoy</title>
-  <link rel="stylesheet" href="styles/explora.css?v=13" />
+  <link rel="stylesheet" href="styles/explora.css?v=15" />
   <link rel="stylesheet" href="styles/navbar.css?v=2" />
-  <link rel="stylesheet" href="styles/book-popup.css?v=1" />
+  <link rel="stylesheet" href="styles/book-popup.css?v=2" />
+  <link rel="stylesheet" href="styles/sweetalert.css?v=2" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
@@ -123,6 +124,7 @@
             &ldquo;<span th:text="${quote.texto}">Texto</span>&rdquo;
           </p>
           <p class="quote-card__work">- <span th:text="${quote.obra}">Obra</span></p>
+          <p class="quote-card__user">Compartida por <span th:text="${quote.usuario}">Anónimo</span></p>
         </article>
       </div>
       <div class="community-empty" th:if="${#lists.isEmpty(communityQuotes)}">
@@ -135,7 +137,10 @@
     <div class="community-reviews-modal__backdrop"></div>
     <div class="community-reviews-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="communityReviewsTitle">
       <button type="button" class="community-reviews-modal__close" aria-label="Cerrar comentarios">&times;</button>
-      <div class="community-reviews-modal__summary">
+      <div class="community-reviews-modal__summary community-reviews-modal__summary--clickable"
+           role="button"
+           tabindex="0"
+           aria-label="Buscar este libro en Google Books">
         <img id="communityReviewsCover" src="/images/portadaLibro.jpg" alt="Portada del libro">
         <div class="community-reviews-modal__meta">
           <p class="community-reviews-modal__eyebrow">Comentarios de lectores</p>
@@ -144,6 +149,26 @@
         </div>
       </div>
       <div id="communityReviewsList" class="community-reviews-list"></div>
+    </div>
+  </div>
+
+  <div class="overlay-modal" id="overlayModal"></div>
+  <div id="finishReadingModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeFinishReadingModal()">&times;</span>
+      <h3>Punt&uacute;a y rese&ntilde;a el libro</h3>
+
+      <div class="stars">
+        <span data-value="1">&#9733;</span>
+        <span data-value="2">&#9733;</span>
+        <span data-value="3">&#9733;</span>
+        <span data-value="4">&#9733;</span>
+        <span data-value="5">&#9733;</span>
+      </div>
+
+      <textarea id="reviewText" placeholder="Escribe tu rese&ntilde;a aqu&iacute;..."></textarea>
+
+      <button id="submitReview" onclick="submitReview()">Guardar</button>
     </div>
   </div>
 
@@ -169,8 +194,9 @@
   </footer>
 
   <script src="/js/navbar.js?v=2"></script>
-  <script src="/js/book.js?v=12"></script>
-  <script src="/js/reading.js?v=11"></script>
-  <script src="/js/explora.js?v=3"></script>
+  <script src="/js/book.js?v=13"></script>
+  <script src="/js/reading.js?v=12"></script>
+  <script src="/js/review.js?v=5"></script>
+  <script src="/js/explora.js?v=6"></script>
 </body>
 </html>

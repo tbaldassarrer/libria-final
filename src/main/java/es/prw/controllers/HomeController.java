@@ -73,6 +73,31 @@ public class HomeController {
 
         response.put("success", true);
         response.put("quotes", mapQuotes(getQuotesForDisplay(user)));
+        response.put("quoteNamePublic", user.isQuoteNamePublic());
+        response.put("username", user.getNombreUsuario());
+        return response;
+    }
+
+    @PostMapping("/quotePrivacy")
+    @ResponseBody
+    public Map<String, Object> updateQuotePrivacy(
+            @RequestParam("quoteNamePublic") boolean quoteNamePublic,
+            Principal principal) {
+        Map<String, Object> response = new HashMap<>();
+        User user = getAuthenticatedUser(principal);
+
+        if (user == null) {
+            response.put("success", false);
+            response.put("message", "Usuario no autenticado.");
+            return response;
+        }
+
+        user.setQuoteNamePublic(quoteNamePublic);
+        userRepository.save(user);
+
+        response.put("success", true);
+        response.put("quoteNamePublic", user.isQuoteNamePublic());
+        response.put("username", user.getNombreUsuario());
         return response;
     }
 
@@ -221,7 +246,12 @@ public class HomeController {
     }
 
     @GetMapping("/explora")
-    public String getExplora(Model model) {
+    public String getExplora(Model model, Principal principal) {
+        User user = getAuthenticatedUser(principal);
+        if (user != null) {
+            model.addAttribute("username", user.getNombreUsuario());
+            model.addAttribute("quoteNamePublic", user.isQuoteNamePublic());
+        }
         model.addAttribute("currentReads", getCommunityCurrentReads(10));
         model.addAttribute("favoriteBooks", getCommunityFavoriteBooks(8));
         model.addAttribute("completedBooks", getCommunityCompletedHighlights(8));
@@ -374,6 +404,10 @@ public class HomeController {
                     Map<String, Object> item = new HashMap<>();
                     item.put("texto", quote.getTexto());
                     item.put("obra", quote.getObra());
+                    User quoteUser = userRepository.findById(quote.getIdUsuario()).orElse(null);
+                    item.put("usuario", quoteUser != null && quoteUser.isQuoteNamePublic()
+                            ? quoteUser.getNombreUsuario()
+                            : "Anónimo");
                     item.put("microcopy", quotes.size() % 2 == 0
                             ? "Guardada por un lector"
                             : "Una frase que merece quedarse");

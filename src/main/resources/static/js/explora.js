@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const authorElement = document.getElementById("communityReviewsAuthor");
     const coverElement = document.getElementById("communityReviewsCover");
     const listElement = document.getElementById("communityReviewsList");
+    const summaryElement = document.querySelector(".community-reviews-modal__summary");
     const carousel = document.getElementById("currentReadsCarousel");
     const prevButton = document.querySelector(".community-carousel__nav--prev");
     const nextButton = document.querySelector(".community-carousel__nav--next");
@@ -92,13 +93,13 @@ document.addEventListener("DOMContentLoaded", function () {
         listElement.append(expandButton, hiddenContainer);
     }
 
-    function loadReviews(card) {
-        const bookId = card.dataset.bookId;
-        titleElement.textContent = card.dataset.bookTitle || "Libro";
-        authorElement.textContent = card.dataset.bookAuthor || "Autor desconocido";
-        coverElement.src = card.dataset.bookCover || "/images/portadaLibro.jpg";
+    function refreshCurrentReviews() {
+        const bookId = modal.dataset.bookId;
+        if (!bookId) {
+            return;
+        }
+
         renderEmptyState("Cargando comentarios...");
-        openModal();
 
         fetch(`/communityReviews?idLibro=${encodeURIComponent(bookId)}`)
             .then(response => response.json())
@@ -107,6 +108,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.error("Error al cargar comentarios del libro:", error);
                 renderEmptyState("No se pudieron cargar los comentarios.");
             });
+    }
+
+    function loadReviews(card) {
+        modal.dataset.bookId = card.dataset.bookId || "";
+        titleElement.textContent = card.dataset.bookTitle || "Libro";
+        authorElement.textContent = card.dataset.bookAuthor || "Autor desconocido";
+        coverElement.src = card.dataset.bookCover || "/images/portadaLibro.jpg";
+        modal.dataset.bookTitle = card.dataset.bookTitle || "";
+        modal.dataset.bookAuthor = card.dataset.bookAuthor || "";
+        openModal();
+        refreshCurrentReviews();
     }
 
     document.addEventListener("click", function (event) {
@@ -129,12 +141,31 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    function openBookDetailsFromModal() {
+        const title = modal.dataset.bookTitle || titleElement.textContent || "";
+
+        if (typeof window.openBookDetailsFromTitle === "function") {
+            closeModal();
+            window.openBookDetailsFromTitle(title);
+            return;
+        }
+
+        window.location.href = `/home?bookTitle=${encodeURIComponent(title)}`;
+    }
+
     document.querySelectorAll(".js-community-book").forEach(card => {
         card.tabIndex = 0;
     });
 
     modalClose?.addEventListener("click", closeModal);
     modalBackdrop?.addEventListener("click", closeModal);
+    summaryElement?.addEventListener("click", openBookDetailsFromModal);
+    summaryElement?.addEventListener("keydown", function (event) {
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openBookDetailsFromModal();
+        }
+    });
 
     if (carousel && prevButton && nextButton) {
         const scrollAmount = () => Math.max(320, Math.floor(carousel.clientWidth * 0.88));

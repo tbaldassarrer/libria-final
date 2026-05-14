@@ -74,7 +74,7 @@ public class ReviewController {
             db.open();
             Connection connection = db.connection;
 
-            String sql = "SELECT u.nombre_usuario, rl.resenia, rl.puntuacion, " +
+            String sql = "SELECT u.nombre_usuario, u.quote_name_public, rl.resenia, rl.puntuacion, " +
                     "DATE_FORMAT(COALESCE(rl.fechaFin, rl.fechaInicio), '%d/%m/%Y') AS fechaActividad " +
                     "FROM registrolectura rl " +
                     "JOIN usuariolector u ON rl.idUsuario = u.id_usuario " +
@@ -88,7 +88,8 @@ public class ReviewController {
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         Map<String, String> review = new HashMap<>();
-                        review.put("usuario", rs.getString("nombre_usuario"));
+                        boolean showUsername = rs.getBoolean("quote_name_public");
+                        review.put("usuario", showUsername ? rs.getString("nombre_usuario") : "Anónimo");
                         review.put("resenia", rs.getString("resenia"));
                         review.put("puntuacion", rs.getString("puntuacion"));
                         review.put("fecha", rs.getString("fechaActividad"));

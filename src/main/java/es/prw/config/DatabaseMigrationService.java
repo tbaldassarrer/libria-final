@@ -19,7 +19,9 @@ public class DatabaseMigrationService {
         addColumnIfMissing("usuariolector", "enabled", "BIT DEFAULT 1");
         addColumnIfMissing("usuariolector", "activation_token", "VARCHAR(100) NULL");
         addColumnIfMissing("usuariolector", "activation_token_created_at", "DATETIME(6) NULL");
+        addColumnIfMissing("usuariolector", "quote_name_public", "BIT DEFAULT 0");
         jdbcTemplate.update("UPDATE usuariolector SET enabled = 1 WHERE enabled IS NULL");
+        jdbcTemplate.update("UPDATE usuariolector SET quote_name_public = 0 WHERE quote_name_public IS NULL");
     }
 
     private void addColumnIfMissing(String tableName, String columnName, String definition) {

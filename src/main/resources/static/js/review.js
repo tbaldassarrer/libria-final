@@ -485,6 +485,7 @@ document.addEventListener("click", function (event) {
         delete modal.dataset.bookTitle;
         modal.dataset.bookId = finishButton.dataset.bookId || "";
         modal.style.display = "block";
+        modal.setAttribute("aria-hidden", "false");
     }
 
     if (overlay) overlay.style.display = "block";
@@ -534,7 +535,97 @@ function submitReview() {
         return;
     }
 
-    fetch(endpoint, {
+    hideReviewModalForPrivacyPrompt();
+
+    askReviewPrivacyPreference()
+        .then(showUsername => {
+            if (showUsername === null) {
+                showReviewModalAfterPrivacyPrompt();
+                return null;
+            }
+
+            return saveReviewPrivacyPreference(showUsername)
+                .catch(error => {
+                    console.error("Error al guardar la privacidad de la reseña:", error);
+                })
+                .then(() => sendReviewRequest(endpoint, requestBody, rating));
+        });
+}
+
+function askReviewPrivacyPreference() {
+    if (typeof Swal === "undefined") {
+        return Promise.resolve(false);
+    }
+
+    return Swal.fire({
+        title: "¿Mostrar tu usuario?",
+        text: "¿Mostrar tu usuario en la reseña?",
+        icon: "question",
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: "Sí",
+        denyButtonText: "No",
+        cancelButtonText: "Cancelar",
+        heightAuto: false,
+        width: 380,
+        customClass: {
+            popup: "malva-popup review-privacy-popup",
+            confirmButton: "malva-confirm-button review-privacy-button",
+            denyButton: "malva-confirm-button review-privacy-button",
+            cancelButton: "review-privacy-cancel"
+        }
+    }).then(result => {
+        if (result.isConfirmed) {
+            return true;
+        }
+
+        if (result.isDenied) {
+            return false;
+        }
+
+        return null;
+    });
+}
+
+function hideReviewModalForPrivacyPrompt() {
+    const modal = document.getElementById("finishReadingModal");
+    const overlay = document.getElementById("overlayModal");
+
+    if (modal) {
+        modal.dataset.waitingPrivacy = "true";
+        modal.style.display = "none";
+        modal.setAttribute("aria-hidden", "true");
+    }
+
+    if (overlay) overlay.style.display = "none";
+}
+
+function showReviewModalAfterPrivacyPrompt() {
+    const modal = document.getElementById("finishReadingModal");
+    const overlay = document.getElementById("overlayModal");
+
+    if (modal?.dataset.waitingPrivacy === "true") {
+        modal.style.display = "block";
+        modal.setAttribute("aria-hidden", "false");
+        delete modal.dataset.waitingPrivacy;
+    }
+
+    if (overlay) overlay.style.display = "block";
+}
+
+function saveReviewPrivacyPreference(showUsername) {
+    const body = new URLSearchParams();
+    body.set("quoteNamePublic", String(showUsername));
+
+    return fetch("/quotePrivacy", {
+        method: "POST",
+        headers: formHeaders(),
+        body: body.toString()
+    }).then(readJsonResponse);
+}
+
+function sendReviewRequest(endpoint, requestBody, rating) {
+    return fetch(endpoint, {
         method: "POST",
         headers: formHeaders(),
         body: requestBody
@@ -543,6 +634,10 @@ function submitReview() {
     .then(data => {
         if (data.success) {
             closeFinishReadingModal();
+            if (window.location.pathname === "/explora") {
+                window.location.reload();
+                return;
+            }
             if (typeof loadLibrary === "function") loadLibrary();
             if (typeof loadReviews === "function") loadReviews();
             if (typeof loadCurrentReading === "function") loadCurrentReading();
@@ -584,8 +679,10 @@ function closeFinishReadingModal() {
     if (overlay) overlay.style.display = "none";
     if (modal) {
         modal.style.display = "none";
+        modal.setAttribute("aria-hidden", "true");
         delete modal.dataset.bookTitle;
         delete modal.dataset.bookId;
+        delete modal.dataset.waitingPrivacy;
     }
 
     const reviewText = document.getElementById("reviewText");

@@ -39,6 +39,9 @@ public class User {
     @Column(name = "activation_token_created_at")
     private LocalDateTime activationTokenCreatedAt;
 
+    @Column(name = "quote_name_public")
+    private Boolean quoteNamePublic = false;
+
     // Constructor vacío obligatorio para JPA
     public User() {}
 
@@ -112,5 +115,13 @@ public class User {
 
     public void setActivationTokenCreatedAt(LocalDateTime activationTokenCreatedAt) {
         this.activationTokenCreatedAt = activationTokenCreatedAt;
+    }
+
+    public boolean isQuoteNamePublic() {
+        return Boolean.TRUE.equals(quoteNamePublic);
+    }
+
+    public void setQuoteNamePublic(Boolean quoteNamePublic) {
+        this.quoteNamePublic = quoteNamePublic;
     }
 }
