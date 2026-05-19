@@ -22,9 +22,13 @@ public class DatabaseMigrationService {
         addColumnIfMissing("usuariolector", "quote_name_public", "BIT DEFAULT 0");
         addColumnIfMissing("usuariolector", "id_usuario", "INT NULL");
         addColumnIfMissing("usuariolector", "nombre_usuario", "VARCHAR(255) NULL");
-        jdbcTemplate.update("UPDATE usuariolector SET id_usuario = idUsuario WHERE id_usuario IS NULL");
-        jdbcTemplate.update("UPDATE usuariolector SET nombre_usuario = nombreUsuario "
-                + "WHERE (nombre_usuario IS NULL OR nombre_usuario = '') AND nombreUsuario IS NOT NULL");
+        if (columnExists("usuariolector", "idUsuario")) {
+            jdbcTemplate.update("UPDATE usuariolector SET id_usuario = idUsuario WHERE id_usuario IS NULL");
+        }
+        if (columnExists("usuariolector", "nombreUsuario")) {
+            jdbcTemplate.update("UPDATE usuariolector SET nombre_usuario = nombreUsuario "
+                    + "WHERE (nombre_usuario IS NULL OR nombre_usuario = '') AND nombreUsuario IS NOT NULL");
+        }
         jdbcTemplate.update("UPDATE usuariolector SET enabled = 1 WHERE enabled IS NULL");
         jdbcTemplate.update("UPDATE usuariolector SET quote_name_public = 0 WHERE quote_name_public IS NULL");
         addColumnIfMissing("readingjournal", "idLibro", "INT NULL");
@@ -71,6 +75,12 @@ public class DatabaseMigrationService {
     }
 
     private void addColumnIfMissing(String tableName, String columnName, String definition) {
+        if (!columnExists(tableName, columnName)) {
+            jdbcTemplate.execute("ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + definition);
+        }
+    }
+
+    private boolean columnExists(String tableName, String columnName) {
         Integer count = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM information_schema.COLUMNS "
                         + "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?",
@@ -78,8 +88,6 @@ public class DatabaseMigrationService {
                 tableName,
                 columnName);
 
-        if (count == null || count == 0) {
-            jdbcTemplate.execute("ALTER TABLE " + tableName + " ADD COLUMN " + columnName + " " + definition);
-        }
+        return count != null && count > 0;
     }
 }
