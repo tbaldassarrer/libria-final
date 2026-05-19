@@ -26,7 +26,7 @@ import es.prw.services.GoogleBooksService;
 @Controller
 public class SearchBookController {
 
-    private static final int MAX_SUGGESTIONS = 10;
+    private static final int MAX_SUGGESTIONS = 20;
     private static final String DEFAULT_COVER = "/images/portadaLibro.jpg";
 
     @Autowired
@@ -57,16 +57,14 @@ public class SearchBookController {
             System.out.println("Error al buscar libros en Google Books: " + e.getMessage());
         }
 
-        if (suggestions.isEmpty()) {
-            try {
-                bookRepository.findByTituloOrAutorContaining(cleanQuery)
-                        .stream()
-                        .filter(book -> matchesSuggestionQuery(book.getTitulo(), book.getAutor(), cleanQuery))
-                        .limit(MAX_SUGGESTIONS)
-                        .forEach(book -> addSuggestion(suggestions, seenTitles, book));
-            } catch (Exception e) {
-                System.out.println("Error al buscar libros en BD: " + e.getMessage());
-            }
+        try {
+            bookRepository.findByTituloOrAutorContaining(cleanQuery)
+                    .stream()
+                    .filter(book -> matchesSuggestionQuery(book.getTitulo(), book.getAutor(), cleanQuery))
+                    .limit(MAX_SUGGESTIONS)
+                    .forEach(book -> addSuggestion(suggestions, seenTitles, book));
+        } catch (Exception e) {
+            System.out.println("Error al buscar libros en BD: " + e.getMessage());
         }
 
         return suggestions

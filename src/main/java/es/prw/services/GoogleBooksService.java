@@ -17,6 +17,7 @@ import java.text.Normalizer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -33,6 +34,9 @@ public class GoogleBooksService {
     @Autowired
     private BookRepository bookRepository;
 
+    @Value("${app.google-books.api-key:}")
+    private String googleBooksApiKey;
+
     private final RestTemplate restTemplate = new RestTemplate();
 
     public Book findOrCreateByTitle(String title) {
@@ -46,15 +50,16 @@ public class GoogleBooksService {
             return existingBook;
         }
 
-        JsonNode items = firstAvailableGoogleResults(
-                "intitle:" + cleanTitle,
-                cleanTitle);
-        if (items == null || !items.isArray() || items.isEmpty()) {
+        JsonNode item = findBestGoogleItem(cleanTitle, titleQueryVariants(cleanTitle));
+        if (item == null) {
             return null;
         }
 
-        JsonNode info = items.get(0).path("volumeInfo");
-        String googleTitle = text(info.path("title"), cleanTitle);
+        JsonNode info = item.path("volumeInfo");
+        String googleTitle = text(info.path("title"), "");
+        if (googleTitle.isBlank()) {
+            return null;
+        }
 
         existingBook = bookRepository.findFirstByTituloIgnoreCase(googleTitle);
         if (existingBook != null) {
@@ -97,13 +102,12 @@ public class GoogleBooksService {
             return existingBook;
         }
 
-        JsonNode items = firstAvailableGoogleResults(cleanQuery, "inauthor:" + cleanQuery, "intitle:" + cleanQuery);
-        if (items == null || !items.isArray() || items.isEmpty()) {
+        JsonNode item = findBestGoogleItem(cleanQuery, broadQueryVariants(cleanQuery));
+        if (item == null) {
             return null;
         }
 
-        String bestTitle = text(items.get(0).path("volumeInfo").path("title"), cleanQuery);
-        return findOrCreateByTitle(bestTitle);
+        return saveGoogleBook(item);
     }
 
     public Book findOrCreateByGoogleId(String googleId) {
@@ -120,10 +124,6 @@ public class GoogleBooksService {
         try {
             JsonNode item = restTemplate.getForObject(uri, JsonNode.class);
             if (item == null || item.isMissingNode() || item.isNull()) {
-                return null;
-            }
-
-            if (!isSpanishVolume(item.path("volumeInfo"))) {
                 return null;
             }
 
@@ -148,19 +148,19 @@ public class GoogleBooksService {
         List<Map<String, String>> suggestions = new ArrayList<>();
         Set<String> seenTitles = new LinkedHashSet<>();
         String cleanQuery = query == null ? "" : query.trim();
-        int fetchLimit = Math.max(limit * 2, 10);
+        int normalizedLimit = Math.max(1, limit);
+        int fetchLimit = Math.min(40, Math.max(normalizedLimit * 2, 20));
 
-        collectSuggestions(suggestions, seenTitles, cleanQuery,
-                getGoogleBooks("inauthor:" + cleanQuery, fetchLimit, true, "relevance"), limit);
-        collectSuggestions(suggestions, seenTitles, cleanQuery,
-                getGoogleBooks("intitle:" + cleanQuery, fetchLimit, true, "relevance"), limit);
-        collectSuggestions(suggestions, seenTitles, cleanQuery,
-                getGoogleBooks(cleanQuery, fetchLimit, true, "relevance"), limit);
-        collectSuggestions(suggestions, seenTitles, cleanQuery,
-                getGoogleBooks(cleanQuery, fetchLimit, true, "newest"), limit);
+        for (String variant : priorityQueryVariants(cleanQuery)) {
+            collectSuggestions(suggestions, seenTitles, cleanQuery,
+                    getGoogleBooks(variant, fetchLimit, false, "relevance"), normalizedLimit);
+            if (suggestions.size() >= normalizedLimit) {
+                return suggestions.stream().limit(normalizedLimit).toList();
+            }
+        }
 
         return suggestions.stream()
-                .limit(Math.max(1, limit))
+                .limit(normalizedLimit)
                 .toList();
     }
 
@@ -178,6 +178,10 @@ public class GoogleBooksService {
 
         if (restrictToSpanish) {
             builder.queryParam("langRestrict", "es");
+        }
+
+        if (googleBooksApiKey != null && !googleBooksApiKey.isBlank()) {
+            builder.queryParam("key", googleBooksApiKey.trim());
         }
 
         URI uri = builder.build().encode().toUri();
@@ -207,6 +211,98 @@ public class GoogleBooksService {
         return null;
     }
 
+    private JsonNode findBestGoogleItem(String originalQuery, List<String> queries) {
+        JsonNode firstFallback = null;
+
+        for (String query : queries.stream().limit(4).toList()) {
+            JsonNode items = getGoogleBooks(query, 10, false, "relevance");
+            if (items == null || !items.isArray() || items.isEmpty()) {
+                continue;
+            }
+
+            if (firstFallback == null) {
+                firstFallback = items.get(0);
+            }
+
+            for (JsonNode item : items) {
+                JsonNode info = item.path("volumeInfo");
+                String title = text(info.path("title"), "");
+                String author = joinAuthors(info.path("authors"));
+                if (matchesSuggestionQuery(title, author, originalQuery)) {
+                    return item;
+                }
+            }
+        }
+
+        return firstFallback;
+    }
+
+    private List<String> broadQueryVariants(String query) {
+        LinkedHashSet<String> variants = new LinkedHashSet<>();
+        addBroadQueryVariants(variants, query);
+        String cleanQuery = query == null ? "" : query.trim();
+        String withoutAccents = normalizeForMatch(cleanQuery);
+        if (!withoutAccents.equalsIgnoreCase(cleanQuery)) {
+            addBroadQueryVariants(variants, withoutAccents);
+        }
+        return variants.stream().filter(value -> !value.isBlank()).toList();
+    }
+
+    private List<String> priorityQueryVariants(String query) {
+        String cleanQuery = query == null ? "" : query.trim();
+        LinkedHashSet<String> variants = new LinkedHashSet<>();
+        if (cleanQuery.isBlank()) {
+            return List.of();
+        }
+
+        variants.add(cleanQuery);
+        variants.add("inauthor:" + cleanQuery);
+        variants.add("intitle:" + cleanQuery);
+
+        String withoutAccents = normalizeForMatch(cleanQuery);
+        if (!withoutAccents.equalsIgnoreCase(cleanQuery)) {
+            variants.add(withoutAccents);
+            variants.add("intitle:" + withoutAccents);
+        }
+
+        return variants.stream().filter(value -> !value.isBlank()).limit(4).toList();
+    }
+
+    private List<String> titleQueryVariants(String query) {
+        LinkedHashSet<String> variants = new LinkedHashSet<>();
+        addTitleQueryVariants(variants, query);
+        String cleanQuery = query == null ? "" : query.trim();
+        String withoutAccents = normalizeForMatch(cleanQuery);
+        if (!withoutAccents.equalsIgnoreCase(cleanQuery)) {
+            addTitleQueryVariants(variants, withoutAccents);
+        }
+        return variants.stream().filter(value -> !value.isBlank()).toList();
+    }
+
+    private void addBroadQueryVariants(Set<String> variants, String query) {
+        String cleanQuery = query == null ? "" : query.trim();
+        if (cleanQuery.isBlank()) {
+            return;
+        }
+
+        variants.add(cleanQuery);
+        variants.add("inauthor:" + cleanQuery);
+        variants.add("intitle:" + cleanQuery);
+        variants.add("\"" + cleanQuery + "\"");
+    }
+
+    private void addTitleQueryVariants(Set<String> variants, String query) {
+        String cleanQuery = query == null ? "" : query.trim();
+        if (cleanQuery.isBlank()) {
+            return;
+        }
+
+        variants.add(cleanQuery);
+        variants.add("intitle:\"" + cleanQuery + "\"");
+        variants.add("intitle:" + cleanQuery);
+        variants.add("\"" + cleanQuery + "\"");
+    }
+
     private void collectTitles(Set<String> titles, JsonNode items) {
         if (items == null || !items.isArray()) {
             return;
@@ -214,9 +310,6 @@ public class GoogleBooksService {
 
         for (JsonNode item : items) {
             JsonNode info = item.path("volumeInfo");
-            if (!isSpanishVolume(info)) {
-                continue;
-            }
 
             String title = text(info.path("title"), "");
             if (!title.isBlank()) {
@@ -242,9 +335,6 @@ public class GoogleBooksService {
             }
 
             JsonNode info = item.path("volumeInfo");
-            if (!isSpanishVolume(info)) {
-                continue;
-            }
 
             String title = text(info.path("title"), "");
             String author = joinAuthors(info.path("authors"));
@@ -281,11 +371,11 @@ public class GoogleBooksService {
 
         if (tokens.isEmpty()) {
             String normalizedQuery = normalizeForMatch(query);
-            return words.stream().anyMatch(word -> word.startsWith(normalizedQuery));
+            return words.stream().anyMatch(word -> word.startsWith(normalizedQuery) || word.contains(normalizedQuery));
         }
 
         for (String token : tokens) {
-            boolean matchesToken = words.stream().anyMatch(word -> word.startsWith(token));
+            boolean matchesToken = words.stream().anyMatch(word -> word.startsWith(token) || word.contains(token));
             if (!matchesToken) {
                 return false;
             }
@@ -318,10 +408,6 @@ public class GoogleBooksService {
 
     private Book saveGoogleBook(JsonNode item) {
         JsonNode info = item.path("volumeInfo");
-        if (!isSpanishVolume(info)) {
-            return null;
-        }
-
         String googleTitle = text(info.path("title"), "");
         if (googleTitle.isBlank()) {
             return null;

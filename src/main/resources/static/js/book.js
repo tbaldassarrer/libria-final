@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       searchDebounceTimer = setTimeout(() => {
         fetchSuggestions(query);
-      }, 250);
+      }, 650);
     });
 
     searchInput.addEventListener("keydown", function (event) {
@@ -75,12 +75,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (currentSuggestions.length > 0) {
         const firstSuggestion = currentSuggestions[0];
-        searchInput.value = firstSuggestion.title;
-        selectedBook = firstSuggestion.title;
-        selectedGoogleId = firstSuggestion.googleId || "";
-        searchBookDetails(firstSuggestion.title, selectedGoogleId);
-        selectedBook = "";
-        selectedGoogleId = "";
+        if (shouldOpenFirstSuggestion(searchInput.value.trim(), firstSuggestion)) {
+          searchInput.value = firstSuggestion.title;
+          selectedBook = firstSuggestion.title;
+          selectedGoogleId = firstSuggestion.googleId || "";
+          searchBookDetails(firstSuggestion.title, selectedGoogleId);
+          selectedBook = "";
+          selectedGoogleId = "";
+        } else {
+          searchBookDetails(searchInput.value.trim());
+        }
         return;
       }
 
@@ -110,12 +114,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (currentSuggestions.length > 0) {
         const firstSuggestion = currentSuggestions[0];
-        searchInput.value = firstSuggestion.title;
-        selectedBook = firstSuggestion.title;
-        selectedGoogleId = firstSuggestion.googleId || "";
-        searchBookDetails(firstSuggestion.title, selectedGoogleId);
-        selectedBook = "";
-        selectedGoogleId = "";
+        if (shouldOpenFirstSuggestion(query, firstSuggestion)) {
+          searchInput.value = firstSuggestion.title;
+          selectedBook = firstSuggestion.title;
+          selectedGoogleId = firstSuggestion.googleId || "";
+          searchBookDetails(firstSuggestion.title, selectedGoogleId);
+          selectedBook = "";
+          selectedGoogleId = "";
+        } else {
+          searchBookDetails(query);
+        }
         return;
       }
 
@@ -228,7 +236,7 @@ document.addEventListener("DOMContentLoaded", function () {
           document.getElementById("bookGenre").textContent = data.genero;
           document.getElementById("bookYear").textContent = data.anioEdicion;
           document.getElementById("bookRating").textContent = data.puntuacion;
-          document.getElementById("bookSynopsis").textContent = data.sinopsis;
+          document.getElementById("bookSynopsis").innerHTML = sanitizeSynopsisHtml(data.sinopsis);
           document.getElementById("bookCover").src = data.cover_image || "/images/portadaLibro.jpg";
 
           popupWindow.style.display = "block";
@@ -330,6 +338,53 @@ function escapeHtml(value) {
   const div = document.createElement("div");
   div.textContent = value || "";
   return div.innerHTML;
+}
+
+function sanitizeSynopsisHtml(value) {
+  const allowedTags = new Set(["B", "BR", "EM", "I", "P", "STRONG", "UL", "OL", "LI"]);
+  const template = document.createElement("template");
+  template.innerHTML = value || "";
+
+  function cleanNode(node) {
+    [...node.childNodes].forEach(child => {
+      if (child.nodeType === Node.ELEMENT_NODE) {
+        if (!allowedTags.has(child.tagName)) {
+          child.replaceWith(document.createTextNode(child.textContent || ""));
+          return;
+        }
+
+        [...child.attributes].forEach(attribute => child.removeAttribute(attribute.name));
+        cleanNode(child);
+      } else if (child.nodeType !== Node.TEXT_NODE) {
+        child.remove();
+      }
+    });
+  }
+
+  cleanNode(template.content);
+  return template.innerHTML.trim() || "Sin sinopsis disponible.";
+}
+
+function shouldOpenFirstSuggestion(query, suggestion) {
+  if (!suggestion) {
+    return false;
+  }
+
+  if (suggestion.googleId) {
+    return true;
+  }
+
+  const normalizedQuery = normalizeSearchText(query);
+  const normalizedTitle = normalizeSearchText(suggestion.title || "");
+  return normalizedTitle.includes(normalizedQuery) || normalizedQuery.includes(normalizedTitle);
+}
+
+function normalizeSearchText(value) {
+  return (value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
 }
 
 function closePopup() {
