@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const entriesCount = document.getElementById("journalEntriesCount");
   const coverInput = document.getElementById("journalCover");
   const coverPreview = document.getElementById("coverPreview");
+  const readBookSelect = document.getElementById("journalReadBook");
   const saveButton = document.getElementById("saveJournalEntry");
   const openModalButton = document.getElementById("openJournalReviewsModal");
   const reviewModal = document.getElementById("journalReviewModal");
@@ -32,6 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentCoverImage = "";
   let currentEntryId = null;
   let entriesCache = [];
+  let completedBooksCache = [];
   let modalSelectedEntryId = null;
 
   function setSaveStatus(text) {
@@ -86,10 +88,73 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  function renderCompletedBooks(books) {
+    completedBooksCache = Array.isArray(books) ? books : [];
+    if (!readBookSelect) {
+      return;
+    }
+
+    if (!completedBooksCache.length) {
+      readBookSelect.innerHTML = '<option value="">No tienes libros marcados como leídos</option>';
+      return;
+    }
+
+    readBookSelect.innerHTML = '<option value="">Selecciona un libro leído</option>' + completedBooksCache.map((book) => (
+      `<option value="${book.idLibro}">${escapeHtml(book.titulo || "Sin título")} · ${escapeHtml(book.autor || "Autor pendiente")}</option>`
+    )).join("");
+
+    const selectedBookId = document.getElementById("journalBookId").value;
+    if (selectedBookId) {
+      readBookSelect.value = selectedBookId;
+    }
+  }
+
+  async function loadCompletedBooks() {
+    if (!readBookSelect) {
+      return;
+    }
+
+    try {
+      const response = await fetch("/readingJournal/completedBooks");
+      const data = await response.json();
+      renderCompletedBooks(data.books || []);
+    } catch (error) {
+      console.error("Error al cargar libros leídos:", error);
+      readBookSelect.innerHTML = '<option value="">No se pudieron cargar los libros leídos</option>';
+    }
+  }
+
+  function applyCompletedBook(book) {
+    if (!book) {
+      document.getElementById("journalBookId").value = "";
+      return;
+    }
+
+    document.getElementById("journalBookId").value = book.idLibro || "";
+    document.getElementById("titulo").value = book.titulo || "";
+    document.getElementById("autor").value = book.autor || "";
+    document.getElementById("fechaInicio").value = book.fechaInicio || "";
+    document.getElementById("fechaFin").value = book.fechaFin || "";
+
+    if (book.resenia && !document.getElementById("reflexionesFinales").value.trim()) {
+      document.getElementById("reflexionesFinales").value = book.resenia;
+    }
+
+    if (Number(book.puntuacion || 0) > 0) {
+      ratingInputs.general.value = String(Math.max(0, Math.min(Number(book.puntuacion), 5)));
+      paintRating("general", Number(ratingInputs.general.value));
+    }
+
+    currentCoverImage = book.coverImage || "";
+    setCoverPreview(currentCoverImage);
+    setSaveStatus("Datos del libro cargados");
+  }
+
   function resetForm(statusText = "Ficha vacía") {
     form.reset();
     currentEntryId = null;
     document.getElementById("journalId").value = "";
+    document.getElementById("journalBookId").value = "";
     currentCoverImage = "";
     setCoverPreview("");
 
@@ -110,6 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function serializeForm() {
     const params = new URLSearchParams();
     params.set("idJournal", document.getElementById("journalId").value || "");
+    params.set("idLibro", document.getElementById("journalBookId").value || "");
     params.set("titulo", document.getElementById("titulo").value.trim());
     params.set("autor", document.getElementById("autor").value.trim());
     params.set("paginas", document.getElementById("paginas").value || "");
@@ -146,6 +212,10 @@ document.addEventListener("DOMContentLoaded", () => {
     resetForm("Reseña cargada");
     currentEntryId = entry.idJournal || null;
     document.getElementById("journalId").value = currentEntryId || "";
+    document.getElementById("journalBookId").value = entry.idLibro || "";
+    if (readBookSelect) {
+      readBookSelect.value = entry.idLibro || "";
+    }
     document.getElementById("titulo").value = entry.titulo || "";
     document.getElementById("autor").value = entry.autor || "";
     document.getElementById("paginas").value = entry.paginas || "";
@@ -162,12 +232,6 @@ document.addEventListener("DOMContentLoaded", () => {
       .find((input) => input.value === formatValue);
     if (formatRadio) {
       formatRadio.checked = true;
-    }
-
-    const feelingRadio = Array.from(document.querySelectorAll('input[name="feelingOption"]'))
-      .find((input) => input.value === (entry.feelingOption || ""));
-    if (feelingRadio) {
-      feelingRadio.checked = true;
     }
 
     ratingInputs.general.value = entry.generalRating || 0;
@@ -231,10 +295,6 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="journal-modal-detail__chip"><strong>Páginas</strong>${escapeHtml(entry.paginas || "Sin indicar")}</div>
             <div class="journal-modal-detail__chip"><strong>Inicio</strong>${escapeHtml(entry.fechaInicio || "Sin indicar")}</div>
             <div class="journal-modal-detail__chip"><strong>Fin</strong>${escapeHtml(entry.fechaFin || "Sin indicar")}</div>
-          </div>
-          <div class="journal-modal-detail__section">
-            <strong>Cómo me hizo sentir</strong>
-            <p>${escapeHtml(entry.feelingOption || "No se seleccionó ninguna opción.")}</p>
           </div>
         </div>
       </div>
@@ -324,7 +384,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <article class="journal-entry-card${entry.idJournal === currentEntryId ? " is-active" : ""}" data-entry-id="${entry.idJournal}">
         <h3 class="journal-entry-card__title">${escapeHtml(entry.titulo || "Sin título")}</h3>
         <p class="journal-entry-card__meta">${escapeHtml(entry.autor || "Autor pendiente")} · ${escapeHtml(entry.formato || "Formato libre")}</p>
-        <p class="journal-entry-card__excerpt">${escapeHtml((entry.reflexionesFinales || entry.feelingOption || "Reseña guardada.").slice(0, 110))}</p>
+        <p class="journal-entry-card__excerpt">${escapeHtml((entry.reflexionesFinales || "Reseña guardada.").slice(0, 110))}</p>
         <div class="journal-entry-card__actions">
           <button type="button" class="journal-entry-card__edit" data-edit-id="${entry.idJournal}">Modificar</button>
           <button type="button" class="journal-entry-card__delete" data-delete-id="${entry.idJournal}">Eliminar</button>
@@ -468,10 +528,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  form.querySelectorAll("input:not([type='hidden']):not([type='file']), textarea").forEach((element) => {
+  form.querySelectorAll("input:not([type='hidden']):not([type='file']), textarea, select").forEach((element) => {
     element.addEventListener("input", () => setSaveStatus("Cambios sin guardar"));
     element.addEventListener("change", () => setSaveStatus("Cambios sin guardar"));
   });
+
+  if (readBookSelect) {
+    readBookSelect.addEventListener("change", () => {
+      const selectedBook = completedBooksCache.find((book) => Number(book.idLibro) === Number(readBookSelect.value));
+      applyCompletedBook(selectedBook);
+    });
+  }
 
   document.querySelectorAll("[data-rating-group]").forEach((group) => {
     group.addEventListener("click", (event) => {
@@ -589,5 +656,5 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  loadEntries(true);
+  Promise.all([loadCompletedBooks(), loadEntries(true)]);
 });

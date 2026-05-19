@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    <title>Club de lectura | Libria</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+    />
+    <link rel="stylesheet" href="styles/clubes.css?v=1" />
+    <link rel="stylesheet" href="styles/navbar.css?v=2" />
+    <link rel="stylesheet" href="styles/book-popup.css?v=1" />
+    <link rel="stylesheet" href="styles/sweetalert.css?v=2" />
+  </head>
+  <body class="reading-club-body">
+    <div th:replace="~{fragments/navbar :: siteNavbar}"></div>
+    <div th:replace="~{fragments/book-popup :: bookPopup}"></div>
+
+    <main class="club-page">
+      <header class="club-hero">
+        <p class="club-eyebrow">Libria Club</p>
+        <h1>Club de lectura</h1>
+        <p class="club-subtitle">
+          Crea clubes sobre libros de Libria, &uacute;nete a otras lectoras y comentad la lectura por cap&iacute;tulos.
+        </p>
+      </header>
+
+      <section class="club-layout">
+        <aside class="club-create-panel">
+          <h2>Crear club</h2>
+          <form id="clubCreateForm" class="club-form" autocomplete="off">
+            <label class="club-field">
+              <span>Libro</span>
+              <select id="clubBook" required>
+                <option value="">Cargando libros...</option>
+              </select>
+            </label>
+            <label class="club-field">
+              <span>Nombre del club</span>
+              <input id="clubName" type="text" maxlength="160" placeholder="Ej. Lectura conjunta de mayo" required />
+            </label>
+            <label class="club-field">
+              <span>Cap&iacute;tulo actual</span>
+              <input id="clubChapter" type="number" min="1" value="1" />
+            </label>
+            <label class="club-field">
+              <span>Descripci&oacute;n</span>
+              <textarea id="clubDescription" rows="4" maxlength="700" placeholder="Ritmo de lectura, fechas o normas del club"></textarea>
+            </label>
+            <button type="submit" class="club-primary-button">
+              <i class="fa-solid fa-plus"></i> Crear club
+            </button>
+          </form>
+        </aside>
+
+        <section class="club-main-panel">
+          <div class="club-section-header">
+            <div>
+              <p class="club-eyebrow">Clubes activos</p>
+              <h2>Lecturas compartidas</h2>
+            </div>
+            <span id="clubCount" class="club-count">0</span>
+          </div>
+
+          <div id="clubList" class="club-list">
+            <p class="club-empty">Cargando clubes...</p>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <div id="clubDiscussionModal" class="club-modal" aria-hidden="true">
+      <div class="club-modal__overlay" data-close-club-modal></div>
+      <section class="club-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="clubDiscussionTitle">
+        <button id="closeClubModal" class="club-modal__close" type="button" aria-label="Cerrar">&times;</button>
+        <div id="clubDiscussionHeader" class="club-discussion-header"></div>
+        <div id="clubComments" class="club-comments">
+          <p class="club-empty">Selecciona un club para leer los comentarios.</p>
+        </div>
+        <form id="clubCommentForm" class="club-comment-form" autocomplete="off">
+          <input id="commentClubId" type="hidden" />
+          <label class="club-field club-field--chapter">
+            <span>Cap&iacute;tulo</span>
+            <input id="commentChapter" type="number" min="1" value="1" />
+          </label>
+          <label class="club-field club-field--comment">
+            <span>Comentario</span>
+            <textarea id="commentText" rows="3" maxlength="1200" placeholder="Comparte una idea, teor&iacute;a o impresi&oacute;n de este cap&iacute;tulo"></textarea>
+          </label>
+          <button type="submit" class="club-primary-button">
+            <i class="fa-solid fa-paper-plane"></i> Publicar
+          </button>
+        </form>
+      </section>
+    </div>
+
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <p class="site-footer__copy">&copy; 2026 Libria. Todos los derechos reservados.</p>
+        <div class="site-footer__socials" aria-label="Redes sociales">
+          <span class="footer-social" aria-label="Instagram" role="img"><i class="fab fa-instagram"></i></span>
+          <span class="footer-social" aria-label="Twitter" role="img"><i class="fab fa-twitter"></i></span>
+          <span class="footer-social" aria-label="Facebook" role="img"><i class="fab fa-facebook-f"></i></span>
+          <a class="footer-social" th:href="@{/contacto}" aria-label="Ir a contacto por email">
+            <i class="fa-solid fa-envelope"></i>
+          </a>
+        </div>
+        <p class="site-footer__creators">Creadoras: Tatiana Baldassarre y Yesenia Rosales</p>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/navbar.js?v=2"></script>
+    <script src="js/book.js?v=12"></script>
+    <script src="js/clubes.js?v=1"></script>
+  </body>
+</html>

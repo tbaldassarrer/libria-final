@@ -25,6 +25,9 @@ public class ReadingJournalEntry {
     @Column(name = "idUsuario", nullable = false)
     private Integer idUsuario;
 
+    @Column(name = "idLibro")
+    private Integer idLibro;
+
     @Column(name = "titulo", length = 255)
     private String titulo;
 
@@ -116,6 +119,14 @@ public class ReadingJournalEntry {
 
     public void setIdUsuario(Integer idUsuario) {
         this.idUsuario = idUsuario;
+    }
+
+    public Integer getIdLibro() {
+        return idLibro;
+    }
+
+    public void setIdLibro(Integer idLibro) {
+        this.idLibro = idLibro;
     }
 
     public String getTitulo() {

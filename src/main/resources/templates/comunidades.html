@@ -6,12 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="_csrf" th:content="${_csrf.token}" />
     <meta name="_csrf_header" th:content="${_csrf.headerName}" />
-    <title>My Reading Journal</title>
+    <title>Diario de lectura | Libria</title>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
     />
-    <link rel="stylesheet" href="styles/comunidades.css?v=13" />
+    <link rel="stylesheet" href="styles/comunidades.css?v=14" />
     <link rel="stylesheet" href="styles/navbar.css?v=2" />
     <link rel="stylesheet" href="styles/book-popup.css?v=1" />
     <link rel="stylesheet" href="styles/sweetalert.css?v=2" />
@@ -24,12 +24,12 @@
       <section class="journal-sheet">
         <header class="journal-header">
           <div class="journal-header__title">
-            <p class="journal-eyebrow">My Reading Journal</p>
-            <h1>My Reading Journal</h1>
+            <p class="journal-eyebrow">Libria Journal</p>
+            <h1>Diario de lectura</h1>
           </div>
           <div class="journal-header__actions">
             <p class="journal-subtitle">
-              Guarda cada rese&ntilde;a con todos sus detalles y recup&eacute;rala cuando quieras.
+              Guarda tus impresiones, valoraciones y detalles de cada libro.
             </p>
             <span id="journalSaveStatus" class="journal-save-status">Completa la ficha y gu&aacute;rdala</span>
           </div>
@@ -38,6 +38,7 @@
         <section class="journal-layout">
           <form id="readingJournalForm" class="journal-form" autocomplete="off">
             <input type="hidden" id="journalId" />
+            <input type="hidden" id="journalBookId" />
             <input type="hidden" id="generalRating" value="0" />
             <input type="hidden" id="romanceRating" value="0" />
             <input type="hidden" id="spiceRating" value="0" />
@@ -50,9 +51,9 @@
             <section class="journal-top">
               <div class="cover-panel">
                 <div class="cover-placeholder" id="coverPreview">
-                  <span>Portada aqu&iacute;</span>
+                  <span>Portada</span>
                 </div>
-                <label class="cover-upload" for="journalCover">Subir portada</label>
+                <label class="cover-upload" for="journalCover"><i class="fa-solid fa-image"></i> Subir portada</label>
                 <input id="journalCover" type="file" accept="image/*" />
                 <div class="quick-stars" aria-label="Valoraci&oacute;n general" data-rating-group="general">
                   <button type="button" data-value="1">&#9734;</button>
@@ -64,6 +65,13 @@
               </div>
 
               <div class="journal-meta">
+                <label class="field field--book-select">
+                  <span>Libro le&iacute;do</span>
+                  <select id="journalReadBook">
+                    <option value="">Cargando libros le&iacute;dos...</option>
+                  </select>
+                </label>
+
                 <div class="meta-grid meta-grid--wide">
                   <label class="field">
                     <span>T&iacute;tulo</span>
@@ -114,21 +122,6 @@
                     <input id="fechaFin" type="date" />
                   </label>
                 </div>
-              </div>
-            </section>
-
-            <section class="journal-block">
-              <h2>C&oacute;mo me hizo sentir este libro</h2>
-              <div class="feelings-grid">
-                <label class="feeling-option"><input type="radio" name="feelingOption" value="Me encanto de principio a fin." /><span>Me encant&oacute; de principio a fin.</span></label>
-                <label class="feeling-option"><input type="radio" name="feelingOption" value="Sensaciones mixtas, tirando a negativas." /><span>Sensaciones mixtas, tirando a negativas.</span></label>
-                <label class="feeling-option"><input type="radio" name="feelingOption" value="Casi perfecto, le falto un detalle." /><span>Casi perfecto, le falt&oacute; un detalle.</span></label>
-                <label class="feeling-option"><input type="radio" name="feelingOption" value="No me compenso el esfuerzo." /><span>No me compens&oacute; el esfuerzo.</span></label>
-                <label class="feeling-option"><input type="radio" name="feelingOption" value="Lo disfrute muchisimo." /><span>Lo disfrut&eacute; much&iacute;simo.</span></label>
-                <label class="feeling-option"><input type="radio" name="feelingOption" value="Me costo y estuve a punto de dejarlo." /><span>Me cost&oacute; y estuve a punto de dejarlo.</span></label>
-                <label class="feeling-option"><input type="radio" name="feelingOption" value="Entretenido, pero no inolvidable." /><span>Entretenido, pero no inolvidable.</span></label>
-                <label class="feeling-option"><input type="radio" name="feelingOption" value="No pude ni terminarlo." /><span>No pude ni terminarlo.</span></label>
-                <label class="feeling-option"><input type="radio" name="feelingOption" value="Ni bueno ni malo, simplemente correcto." /><span>Ni bueno ni malo, simplemente correcto.</span></label>
               </div>
             </section>
 
@@ -228,7 +221,7 @@
           <aside class="journal-reviews-panel">
             <div class="journal-reviews-panel__header">
               <div>
-                <p class="journal-reviews-panel__eyebrow">Reading Journal</p>
+                <p class="journal-reviews-panel__eyebrow">Journal</p>
                 <h2>Mis rese&ntilde;as</h2>
               </div>
               <span id="journalEntriesCount" class="journal-reviews-count">0</span>
@@ -237,7 +230,7 @@
               <p class="journal-empty-state">Todav&iacute;a no has guardado ninguna rese&ntilde;a.</p>
             </div>
             <button type="button" id="openJournalReviewsModal" class="journal-action-button journal-reviews-panel__open">
-              Ver todas las rese&ntilde;as
+              <i class="fa-solid fa-list"></i> Ver todas
             </button>
           </aside>
         </section>
@@ -249,7 +242,7 @@
       <div class="journal-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="journalModalTitle">
         <button type="button" class="journal-modal__close" id="closeJournalModal" aria-label="Cerrar">&times;</button>
         <div class="journal-modal__header">
-          <p class="journal-modal__eyebrow">My Reading Journal</p>
+          <p class="journal-modal__eyebrow">Libria Journal</p>
           <h2 id="journalModalTitle">Mis rese&ntilde;as guardadas</h2>
         </div>
         <div class="journal-modal__content">
@@ -288,6 +281,6 @@
     <script src="js/navbar.js?v=2"></script>
     <script src="js/book.js?v=12"></script>
     <script src="js/reading.js?v=11"></script>
-    <script src="js/comunidades.js?v=5"></script>
+    <script src="js/comunidades.js?v=7"></script>
   </body>
 </html>

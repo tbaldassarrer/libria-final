@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,6 +27,48 @@ public class ReadingJournalController {
 
     @Autowired
     private ReadingJournalEntryRepository readingJournalEntryRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @GetMapping("/readingJournal/completedBooks")
+    @ResponseBody
+    public Map<String, Object> getCompletedBooks(Principal principal) {
+        Map<String, Object> response = new HashMap<>();
+        User user = getAuthenticatedUser(principal);
+
+        if (user == null) {
+            response.put("success", false);
+            response.put("books", new ArrayList<>());
+            return response;
+        }
+
+        response.put("success", true);
+        response.put("books", jdbcTemplate.query("""
+                SELECT l.idLibro, l.titulo, l.autor, l.cover_image,
+                       DATE_FORMAT(rl.fechaInicio, '%Y-%m-%d') AS fechaInicio,
+                       DATE_FORMAT(rl.fechaFin, '%Y-%m-%d') AS fechaFin,
+                       rl.resenia, rl.puntuacion
+                FROM registrolectura rl
+                JOIN libros l ON rl.idLibro = l.idLibro
+                WHERE rl.idUsuario = ? AND rl.estadoLectura = 'Completado'
+                ORDER BY rl.fechaFin DESC, rl.fechaInicio DESC, l.titulo ASC
+                """,
+                (rs, rowNum) -> {
+                    Map<String, Object> book = new HashMap<>();
+                    book.put("idLibro", rs.getInt("idLibro"));
+                    book.put("titulo", safe(rs.getString("titulo")));
+                    book.put("autor", safe(rs.getString("autor")));
+                    book.put("coverImage", safe(rs.getString("cover_image")));
+                    book.put("fechaInicio", safe(rs.getString("fechaInicio")));
+                    book.put("fechaFin", safe(rs.getString("fechaFin")));
+                    book.put("resenia", safe(rs.getString("resenia")));
+                    book.put("puntuacion", rs.getObject("puntuacion") != null ? rs.getInt("puntuacion") : 0);
+                    return book;
+                },
+                user.getIdUsuario()));
+        return response;
+    }
 
     @GetMapping("/readingJournal/entries")
     @ResponseBody
@@ -50,6 +93,7 @@ public class ReadingJournalController {
     @ResponseBody
     public Map<String, Object> saveEntry(
             @RequestParam(value = "idJournal", required = false) Integer idJournal,
+            @RequestParam(value = "idLibro", required = false) Integer idLibro,
             @RequestParam(value = "titulo", required = false) String titulo,
             @RequestParam(value = "autor", required = false) String autor,
             @RequestParam(value = "paginas", required = false) Integer paginas,
@@ -96,6 +140,7 @@ public class ReadingJournalController {
         }
 
         entry.setIdUsuario(user.getIdUsuario());
+        entry.setIdLibro(idLibro);
         entry.setTitulo(normalize(titulo));
         entry.setAutor(normalize(autor));
         entry.setPaginas(paginas);
@@ -184,6 +229,7 @@ public class ReadingJournalController {
     private Map<String, Object> mapEntry(ReadingJournalEntry entry) {
         Map<String, Object> item = new HashMap<>();
         item.put("idJournal", entry.getIdJournal());
+        item.put("idLibro", entry.getIdLibro());
         item.put("titulo", safe(entry.getTitulo()));
         item.put("autor", safe(entry.getAutor()));
         item.put("paginas", entry.getPaginas());
